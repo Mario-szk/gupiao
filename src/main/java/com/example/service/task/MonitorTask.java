@@ -248,6 +248,7 @@ public class MonitorTask  {
 			List<TradingRecordDo> rtList=trendStrategyService.getStrateByBoll(spList, account, config);
 			if(rtList!=null && rtList.size() >1) {
 				msg=msg+rtList.get(rtList.size()-1).getRemark();
+				return msg;
 			}
 		} catch (Exception e) {
 			logger.error("updateMsg:"+"number:"+number+"-->"+e.getMessage(),e);

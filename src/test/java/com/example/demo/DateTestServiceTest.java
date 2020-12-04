@@ -75,9 +75,13 @@ public class DateTestServiceTest {
 		guPiaoService.updateDayStockByThs();
 	}
 	
-	@Test
+	//@Test
 	public void Test60Day() {
 		realTimeTask.updateHistoryTask1();
+	}
+	@Test
+	public void updateHistoryTask2() {
+		realTimeTask.updateHistoryTask2();
 	}
 
 }
