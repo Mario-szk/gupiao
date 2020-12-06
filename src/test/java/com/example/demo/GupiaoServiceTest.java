@@ -17,11 +17,13 @@ import com.alibaba.fastjson.JSON;
 import com.example.ai.MockDeal;
 import com.example.mapper.HistoryDayStockMapper;
 import com.example.mapper.HistoryStockMapper;
+import com.example.mapper.RiskStockMapper;
 import com.example.mapper.RobotAccountMapper;
 import com.example.mapper.RobotSetMapper;
 import com.example.mapper.TradingRecordMapper;
 import com.example.model.HistoryDayStockDo;
 import com.example.model.HistoryStockDo;
+import com.example.model.RiskStockDo;
 import com.example.model.RobotAccountDo;
 import com.example.model.RobotSetDo;
 import com.example.model.TradingRecordDo;
@@ -29,7 +31,6 @@ import com.example.model.ths.HistoryRsDate;
 import com.example.service.GuPiaoService;
 import com.example.service.task.DataTask;
 import com.example.service.task.MonitorTask;
-import com.example.service.task.RealTimeTask;
 import com.example.uitls.ReadApiUrl;
 import com.example.uitls.RedisUtil;
 
@@ -64,17 +65,43 @@ public class GupiaoServiceTest {
 	@Autowired
 	private HistoryDayStockMapper historyDayStockMapper;
 	
+	@Autowired
+	private RiskStockMapper riskStockMapper;
+	
 	private String number="sh600305";
 	
 	@Autowired
 	private DataTask dataTask;
 	
 	@Test
+	public void TestRiskStockMapper() {
+		RiskStockDo obj=new RiskStockDo();
+		obj.setBollDayLower(11.11d);
+		obj.setBollDayMid(22.22d);
+		obj.setBollDayUp(22.22d);
+		obj.setBuyPointBegin(22.22d);
+		obj.setBuyPointEnd(22.22d);
+		obj.setEma144(22.22d);
+		obj.setEma89(22.22d);
+		obj.setMa20(22.22d);
+		obj.setMa200(22.22d);
+		obj.setMa5(22.22d);
+		obj.setName("dfdf");
+		obj.setNumber("22323");
+		obj.setStatus(1);
+		obj.setStopLoss(22.22d);
+		obj.setStopProfit(22.22d);
+		obj.setTop5volume(232323l);
+		obj.setUpdateTime(new Date());
+		riskStockMapper.insert(obj);
+	}
+	
+	
+	
+	//@Test
 	public void AiBuyIn() {
 		monitorTask.EmaGupiao();
 	}
-
-	
 	
 	//@Test
 	public void dataTask() {

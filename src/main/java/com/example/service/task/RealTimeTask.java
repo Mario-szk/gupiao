@@ -1,5 +1,6 @@
 package com.example.service.task;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Service;
 import com.example.model.StockDo;
 import com.example.service.GuPiaoService;
 import com.example.uitls.DateUtils;
+import com.example.uitls.DingTalkRobotHTTPUtil;
 import com.example.uitls.ReadApiUrl;
 import com.example.uitls.RedisKeyUtil;
 import com.example.uitls.RedisUtil;
@@ -127,15 +129,19 @@ public class RealTimeTask implements InitializingBean {
 		updateHistoryStock(list3,today,pool3);
 		updateHistoryStock(list4,today,pool4);
 		updateHistoryStock(list5,today,pool5);
+		String robotbuy = MessageFormat.format("更新60分钟数据" ,new Object[] {});
+        DingTalkRobotHTTPUtil.sendMsg(DingTalkRobotHTTPUtil.APP_TEST_SECRET, robotbuy, null, false);
 	}
 	
-	@Scheduled(cron = "0 0 3 * * *")
+	@Scheduled(cron = "0 0 2 * * *")
 	public void  updateHistoryTask2() {
 		updateIntervalHistoryStock(list1,pool1);
 		updateIntervalHistoryStock(list2,pool2);
 		updateIntervalHistoryStock(list3,pool3);
 		updateIntervalHistoryStock(list4,pool4);
 		updateIntervalHistoryStock(list5,pool5);
+		String robotbuy = MessageFormat.format("更新波段" ,new Object[] {});
+        DingTalkRobotHTTPUtil.sendMsg(DingTalkRobotHTTPUtil.APP_TEST_SECRET, robotbuy, null, false);
 	}
 	
 	private void updateIntervalHistoryStock(final List<StockDo> stockList, final ThreadPoolExecutor pool) {

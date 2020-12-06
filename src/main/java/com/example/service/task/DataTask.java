@@ -187,6 +187,8 @@ public class DataTask  implements InitializingBean {
 				}
 			}
         }
+		String robotbuy = MessageFormat.format("更新日线成功" ,new Object[] {});
+        DingTalkRobotHTTPUtil.sendMsg(DingTalkRobotHTTPUtil.APP_TEST_SECRET, robotbuy, null, false);
 	}
 	
 	

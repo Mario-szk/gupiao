@@ -10,10 +10,8 @@ import com.example.model.RobotAccountDo;
  *
  */
 public interface RobotAccountMapper {
-
 	
 	List<RobotAccountDo> getAll();
-	
 
 	int insert(RobotAccountDo obj);
 

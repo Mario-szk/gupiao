@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+						"http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.example.mapper.RiskStockMapper">
+
+	<resultMap id="riskStockDo" type="com.example.model.RiskStockDo">
+		<result column="id" 			property="id" 			jdbcType="BIGINT" />
+		<result column="update_time" 	property="updateTime" 	jdbcType="TIMESTAMP" />
+		<result column="number" 		property="number" 		jdbcType="VARCHAR" />
+		<result column="name" 			property="name" 		jdbcType="VARCHAR" />
+		<result column="top5volume" 	property="top5volume" 	jdbcType="BIGINT" />
+		<result column="ma5" 			property="ma5" 			jdbcType="DOUBLE" />
+		<result column="ma20" 			property="ma20" 		jdbcType="DOUBLE" />
+		<result column="ma200" 			property="ma200" 		jdbcType="DOUBLE" />
+		<result column="ema89" 			property="ema89" 		jdbcType="DOUBLE" />
+		<result column="ema144" 		property="ema144" 		jdbcType="DOUBLE" />
+		<result column="boll_day_up" 		property="bollDayUp" 		jdbcType="DOUBLE" />
+		<result column="boll_day_mid" 		property="bollDayMid" 		jdbcType="DOUBLE" />
+		<result column="boll_day_lower" 	property="bollDayLower" 	jdbcType="DOUBLE" />
+		<result column="stop_profit" 		property="stopProfit" 		jdbcType="DOUBLE" />
+		<result column="stop_loss" 			property="stopLoss" 		jdbcType="DOUBLE" />
+		<result column="buy_point_begin" 	property="buyPointBegin" 	jdbcType="DOUBLE" />
+		<result column="buy_point_end" 		property="buyPointEnd" 		jdbcType="DOUBLE" />
+		<result column="status" 			property="status" 			jdbcType="INTEGER" />
+	</resultMap>
+
+	<sql id="All_Column">
+		id, update_time,number,name,top5volume,ma5,ma20,ma200,ema89,ema144,
+		boll_day_up,boll_day_mid,boll_day_lower,stop_profit,stop_loss,buy_point_begin,buy_point_end,status
+	</sql>
+
+
+	<select id="getNumber" parameterType="string" resultMap="riskStockDo">
+		SELECT
+		<include refid="All_Column" />
+		FROM risk_stock
+		WHERE number = #{number} AND status=1
+		limit 1
+	</select>
+
+	<insert id="insert" parameterType="riskStockDo">
+		INSERT INTO
+		risk_stock
+		(update_time,number,name,top5volume,ma5,ma20,ma200,ema89,ema144,
+		boll_day_up,boll_day_mid,boll_day_lower,stop_profit,stop_loss,buy_point_begin,buy_point_end,status)
+		VALUES
+		(#{updateTime},#{number},#{name},#{top5volume},#{ma5},#{ma20},#{ma200},#{ema89},#{ema144},
+		#{bollDayUp},#{bollDayMid},#{bollDayLower},#{stopProfit},#{stopLoss},#{buyPointBegin},#{buyPointEnd},#{status})
+	</insert>
+	
+	
+
+	<update id="delete" parameterType="riskStockDo">
+		update risk_stock set status=0
+		WHERE
+		number =#{number}
+	</update>
+
+</mapper>

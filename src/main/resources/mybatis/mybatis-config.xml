@@ -18,5 +18,7 @@
 		<typeAlias alias="historyStockDo" type="com.example.model.HistoryStockDo" />
 		<typeAlias alias="holidayDo" type="com.example.model.HolidayDo" />
 		<typeAlias alias="historyDayStockDo" type="com.example.model.HistoryDayStockDo" />
+		<typeAlias alias="riskStockDo" type="com.example.model.RiskStockDo" />
+		
 	</typeAliases>
 </configuration>
