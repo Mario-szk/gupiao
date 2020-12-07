@@ -261,9 +261,6 @@ public class GuPiaoServiceImpl implements GuPiaoService, InitializingBean {
 		last.setMa20(price.getBoxAvg());
 		last.setNumber(number);
 		last.setName((String)redisUtil.get(RedisKeyUtil.getStockName(number)));
-		if(price.getType()==1) {
-			last.setUp(true);
-		}
 		logger.info("获取上一个趋势："+JSON.toJSONString(price));
 		redisUtil.set(key, JSON.toJSONString(price),86400L);
 		

@@ -23,11 +23,13 @@
 		<result column="buy_point_begin" 	property="buyPointBegin" 	jdbcType="DOUBLE" />
 		<result column="buy_point_end" 		property="buyPointEnd" 		jdbcType="DOUBLE" />
 		<result column="status" 			property="status" 			jdbcType="INTEGER" />
+		<result column="open" 				property="open" 			jdbcType="DOUBLE" />
+		<result column="close" 				property="close" 			jdbcType="DOUBLE" />
 	</resultMap>
 
 	<sql id="All_Column">
 		id, update_time,number,name,top5volume,ma5,ma20,ma200,ema89,ema144,
-		boll_day_up,boll_day_mid,boll_day_lower,stop_profit,stop_loss,buy_point_begin,buy_point_end,status
+		boll_day_up,boll_day_mid,boll_day_lower,stop_profit,stop_loss,buy_point_begin,buy_point_end,status,open,close
 	</sql>
 
 
@@ -43,18 +45,17 @@
 		INSERT INTO
 		risk_stock
 		(update_time,number,name,top5volume,ma5,ma20,ma200,ema89,ema144,
-		boll_day_up,boll_day_mid,boll_day_lower,stop_profit,stop_loss,buy_point_begin,buy_point_end,status)
+		boll_day_up,boll_day_mid,boll_day_lower,stop_profit,stop_loss,buy_point_begin,buy_point_end,status,open,close)
 		VALUES
 		(#{updateTime},#{number},#{name},#{top5volume},#{ma5},#{ma20},#{ma200},#{ema89},#{ema144},
-		#{bollDayUp},#{bollDayMid},#{bollDayLower},#{stopProfit},#{stopLoss},#{buyPointBegin},#{buyPointEnd},#{status})
+		#{bollDayUp},#{bollDayMid},#{bollDayLower},#{stopProfit},#{stopLoss},#{buyPointBegin},#{buyPointEnd},#{status},#{open},#{close})
 	</insert>
 	
-	
 
-	<update id="delete" parameterType="riskStockDo">
-		update risk_stock set status=0
+	<delete id="delete" parameterType="riskStockDo">
+		delete from risk_stock 
 		WHERE
 		number =#{number}
-	</update>
+	</delete>
 
 </mapper>

@@ -24,9 +24,11 @@ import com.example.model.HistoryDayStockDo;
 import com.example.model.HistoryStockDo;
 import com.example.model.RobotAccountDo;
 import com.example.model.RobotSetDo;
+import com.example.model.StockDo;
 import com.example.model.TradingRecordDo;
 import com.example.model.ths.HistoryRsDate;
 import com.example.service.GuPiaoService;
+import com.example.service.TrendStrategyService;
 import com.example.service.task.DataTask;
 import com.example.service.task.MonitorTask;
 import com.example.service.task.RealTimeTask;
@@ -68,7 +70,18 @@ public class DateTestServiceTest {
 	
 	@Autowired
 	private DataTask dataTask;
+	
+	@Autowired
+	private TrendStrategyService trendStrategyService;
 
+	@Test
+	public void updateRisk() {
+		List<StockDo> stockList = guPiaoService.getAllStock();
+		for(StockDo stock:stockList) {
+			trendStrategyService.reRisk(stock.getNumber());
+		}
+	}
+	
 	
 	//@Test
 	public void TestDay() {
@@ -79,7 +92,7 @@ public class DateTestServiceTest {
 	public void Test60Day() {
 		realTimeTask.updateHistoryTask1();
 	}
-	@Test
+	//@Test
 	public void updateHistoryTask2() {
 		realTimeTask.updateHistoryTask2();
 	}

@@ -65,36 +65,14 @@ public class GupiaoServiceTest {
 	@Autowired
 	private HistoryDayStockMapper historyDayStockMapper;
 	
-	@Autowired
-	private RiskStockMapper riskStockMapper;
+
 	
 	private String number="sh600305";
 	
 	@Autowired
 	private DataTask dataTask;
 	
-	@Test
-	public void TestRiskStockMapper() {
-		RiskStockDo obj=new RiskStockDo();
-		obj.setBollDayLower(11.11d);
-		obj.setBollDayMid(22.22d);
-		obj.setBollDayUp(22.22d);
-		obj.setBuyPointBegin(22.22d);
-		obj.setBuyPointEnd(22.22d);
-		obj.setEma144(22.22d);
-		obj.setEma89(22.22d);
-		obj.setMa20(22.22d);
-		obj.setMa200(22.22d);
-		obj.setMa5(22.22d);
-		obj.setName("dfdf");
-		obj.setNumber("22323");
-		obj.setStatus(1);
-		obj.setStopLoss(22.22d);
-		obj.setStopProfit(22.22d);
-		obj.setTop5volume(232323l);
-		obj.setUpdateTime(new Date());
-		riskStockMapper.insert(obj);
-	}
+
 	
 	
 	

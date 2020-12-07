@@ -24,8 +24,26 @@ public class RiskStockDo implements Serializable {
 	private Double stopLoss;
 	private Double buyPointBegin;
 	private Double buyPointEnd;
+	private Double open;
+	private Double close;
 	private Integer status;
 	
+	public Double getOpen() {
+		return open;
+	}
+
+	public void setOpen(Double open) {
+		this.open = open;
+	}
+
+	public Double getClose() {
+		return close;
+	}
+
+	public void setClose(Double close) {
+		this.close = close;
+	}
+
 	public Integer getStatus() {
 		return status;
 	}

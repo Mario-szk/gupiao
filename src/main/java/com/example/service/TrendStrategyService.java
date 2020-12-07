@@ -6,6 +6,7 @@ import org.ta4j.core.BarSeries;
 
 import com.example.chart.base.entity.Candle;
 import com.example.chart.entity.BollEntity;
+import com.example.chart.entity.EMAEntity;
 import com.example.chart.entity.MAEntity;
 import com.example.model.HistoryDayStockDo;
 import com.example.model.HistoryPriceDo;
@@ -115,4 +116,12 @@ public interface TrendStrategyService {
 	 * @return
 	 */
 	List<TradingRecordDo> getStrateByBoll(List<StockPriceVo> list,RobotAccountDo account,RobotSetDo config);
+	
+	BollEntity buildBollEntry(List<StockPriceVo> list);
+	
+	EMAEntity buildEmaEntry(List<StockPriceVo> list);
+	
+	MAEntity buildMaEntry(List<StockPriceVo> list);
+	
+	void reRisk(String number);
 }

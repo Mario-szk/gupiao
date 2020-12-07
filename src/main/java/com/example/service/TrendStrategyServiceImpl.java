@@ -32,12 +32,14 @@ import com.example.chart.entity.EMAEntity;
 import com.example.chart.entity.MAEntity;
 import com.example.mapper.HistoryDayStockMapper;
 import com.example.mapper.HistoryStockMapper;
+import com.example.mapper.RiskStockMapper;
 import com.example.mapper.RobotAccountMapper;
 import com.example.mapper.RobotSetMapper;
 import com.example.model.HistoryDayStockDo;
 import com.example.model.HistoryPriceDo;
 import com.example.model.MockLog;
 import com.example.model.RealTimeDo;
+import com.example.model.RiskStockDo;
 import com.example.model.RobotAccountDo;
 import com.example.model.RobotSetDo;
 import com.example.model.StockPriceVo;
@@ -62,6 +64,9 @@ public class TrendStrategyServiceImpl implements TrendStrategyService {
 
 	@Autowired
 	private HistoryDayStockMapper historyDayStockMapper;
+	
+	@Autowired
+	private RiskStockMapper riskStockMapper;
 
 	@Autowired
 	private HistoryStockMapper historyStockMapper;
@@ -109,6 +114,10 @@ public class TrendStrategyServiceImpl implements TrendStrategyService {
 	@Override
 	public List<StockPriceVo> transformByDayLine(List<HistoryDayStockDo> list) {
 		List<StockPriceVo> rsList = new ArrayList<StockPriceVo>();
+		String name ="";
+		if(!list.isEmpty()) {
+			name = (String) redisUtil.get(RedisKeyUtil.getStockName(list.get(0).getNumber()));
+		}
 		for (HistoryDayStockDo dayStock : list) {
 			if(dayStock.getVolume()==null || dayStock.getVolume()<=0) {
 				continue;
@@ -122,7 +131,6 @@ public class TrendStrategyServiceImpl implements TrendStrategyService {
 			stock.setNumber(dayStock.getNumber());
 			stock.setHistoryAll(dayStock.getHistoryDay() + "1500");
 			stock.setHistoryDay(dayStock.getHistoryDay());
-			String name = (String) redisUtil.get(RedisKeyUtil.getStockName(dayStock.getNumber()));
 			stock.setName(name);
 			rsList.add(stock);
 		}
@@ -204,7 +212,7 @@ public class TrendStrategyServiceImpl implements TrendStrategyService {
 	    
 	    for(int i=0;i<list.size();i++) {
 	    	StockPriceVo price=list.get(i);
-	    	Entry maValue=ma.ma.get(i);
+	    	Entry maValue=ma.ma20.get(i);
 	    	double buyPoint=maValue.getY()*0.97;
 	    	double sellPoint=maValue.getY()*1.05;
 	    	double stopLossPoint=maValue.getY()*0.95;
@@ -324,7 +332,8 @@ public class TrendStrategyServiceImpl implements TrendStrategyService {
 		return  "现价："+list.get(i).getClose()+" "+"未来最高的收盘价："+top+" "+ rs;
 	}
 
-	private EMAEntity buildEmaEntry(List<StockPriceVo> list) {
+	@Override
+	public EMAEntity buildEmaEntry(List<StockPriceVo> list) {
 		if(list.isEmpty()||list.size()<144) {
 			return null;
 		}
@@ -352,19 +361,36 @@ public class TrendStrategyServiceImpl implements TrendStrategyService {
 	}
 	
 	
-	private MAEntity buildMaEntry(List<StockPriceVo> list) {
+	@Override
+	public MAEntity buildMaEntry(List<StockPriceVo> list) {
 		BarSeries series = transformBarSeriesByStockPrice(list);
 		ClosePriceIndicator closePrice = new ClosePriceIndicator(series);
-	    SMAIndicator avg = new SMAIndicator(closePrice, 20);
-	    List<Entry> maList =new  ArrayList<Entry>();
+		SMAIndicator avg5 = new SMAIndicator(closePrice, 5);
+	    SMAIndicator avg20 = new SMAIndicator(closePrice, 20);
+	    SMAIndicator avg200 = new SMAIndicator(closePrice, 200);
+	    List<Entry> ma5List =new  ArrayList<Entry>();
+	    List<Entry> ma20List =new  ArrayList<Entry>();
+	    List<Entry> ma200List =new  ArrayList<Entry>();
 	    for(int i=0;i<list.size();i++) {
-	    	Entry entry=new Entry();
-	    	entry.setX(list.get(i).getHistoryAll());
-	    	entry.setY(avg.getValue(i).doubleValue());
-	    	entry.setData(list.get(i));
-	    	maList.add(entry);
+	    	Entry entry5=new Entry();
+	    	entry5.setX(list.get(i).getHistoryAll());
+	    	entry5.setY(avg5.getValue(i).doubleValue());
+	    	entry5.setData(list.get(i));
+	    	ma5List.add(entry5);
+	    	
+	    	Entry entry20=new Entry();
+	    	entry20.setX(list.get(i).getHistoryAll());
+	    	entry20.setY(avg20.getValue(i).doubleValue());
+	    	entry20.setData(list.get(i));
+	    	ma20List.add(entry20);
+	    	
+	    	Entry entry200=new Entry();
+	    	entry200.setX(list.get(i).getHistoryAll());
+	    	entry200.setY(avg200.getValue(i).doubleValue());
+	    	entry200.setData(list.get(i));
+	    	ma200List.add(entry200);
 	    }
-	    return new MAEntity(maList);
+	    return new MAEntity(ma5List,ma20List,ma200List);
 	}
 
 	@Override
@@ -495,7 +521,8 @@ public class TrendStrategyServiceImpl implements TrendStrategyService {
 		return rslist;
 	}
 
-	private BollEntity buildBollEntry(List<StockPriceVo> list) {
+	@Override
+	public BollEntity buildBollEntry(List<StockPriceVo> list) {
 		BollEntity boll;
 		BarSeries series = transformBarSeriesByStockPrice(list);
         ClosePriceIndicator closePrice = new ClosePriceIndicator(series);
@@ -535,8 +562,69 @@ public class TrendStrategyServiceImpl implements TrendStrategyService {
         return new BollEntity(upList, midList, lowerList);
 	}
 
-	
+	@Override
+	public void reRisk(String number) {
+		try {
+			List<StockPriceVo> spList=transformByDayLine(historyDayStockMapper.getNumber(number));
+			BollEntity boll= buildBollEntry(spList);
+			Entry up=boll.getUpList().get(boll.getUpList().size()-1);
+			Entry mid=boll.getMidList().get(boll.getMidList().size()-1);
+			Entry lower=boll.getLowerList().get(boll.getLowerList().size()-1);
+			EMAEntity ema= buildEmaEntry(spList);
+			MAEntity ma= buildMaEntry(spList);
+			
+			RiskStockDo obj=new RiskStockDo();
+			setBoll(obj,up,mid,lower);
+			setEma(obj,ema);
+			setMa(obj,ma);
+			
+			obj.setName(spList.get(0).getName());
+			obj.setNumber(number);
+			obj.setStatus(1);
+			obj.setOpen(spList.get(spList.size()-1).getOpen().doubleValue());
+			obj.setClose(spList.get(spList.size()-1).getClose().doubleValue());
+			long total=0;
+			for(int i=spList.size()-6;i<spList.size()-1;i++) {
+				total+=spList.get(i).getVolume();
+			}
+			obj.setTop5volume(total/5);
+			obj.setUpdateTime(new Date());
+			if(riskStockMapper.getNumber(number) != null) {
+				riskStockMapper.delete(obj);
+			}
+			riskStockMapper.insert(obj);
+		}catch (Exception e) {
+			// TODO: handle exception
+		}
+	}
+	private void setMa(RiskStockDo obj,MAEntity ma) {
+		if(ma ==null || ma.ma200==null ||ma.ma200.size()<=0) {
+			return;
+		}
+		obj.setMa5(ma.ma5.get(ma.ma5.size()-1).getY());
+		obj.setMa20(ma.ma20.get(ma.ma20.size()-1).getY());
+		obj.setMa200(ma.ma200.get(ma.ma200.size()-1).getY());
+	}
 
-	
+	private void setEma(RiskStockDo obj,EMAEntity ema) {
+		if(ema ==null || ema.getEmaList2()==null ||ema.getEmaList2().size()<=0) {
+			return;
+		}
+		obj.setEma144(ema.getEmaList1().get(ema.getEmaList1().size()-1).getY());
+		obj.setEma89(ema.getEmaList2().get(ema.getEmaList2().size()-1).getY());
+	}
+
+	private void setBoll(RiskStockDo obj,Entry up,Entry mid,Entry lower) {
+		if(up.getY() <=0 || mid.getY()<=0 ||lower.getY()<=0) {
+			return;
+		}
+		obj.setBollDayUp(up.getY());
+		obj.setBollDayMid(mid.getY());
+		obj.setBollDayLower(lower.getY());
+		obj.setBuyPointBegin(mid.getY()*1.01);
+		obj.setBuyPointEnd(mid.getY()*0.99);
+		obj.setStopLoss(lower.getY()*1.01);
+		obj.setStopProfit(up.getY()*0.99);
+	}
 
 }

@@ -191,6 +191,17 @@ public class DataTask  implements InitializingBean {
         DingTalkRobotHTTPUtil.sendMsg(DingTalkRobotHTTPUtil.APP_TEST_SECRET, robotbuy, null, false);
 	}
 	
+	/**
+	 * 补风险线
+	 */
+	@Scheduled(cron = "0 25 9,16 * * MON-FRI")
+	private void updateRisk() {
+		List<StockDo> stockList = guPiaoService.getAllStock();
+		for(StockDo stock:stockList) {
+			trendStrategyService.reRisk(stock.getNumber());
+		}
+	}
+	
 	
 	/**
 	 * 关注个股，显示操作
