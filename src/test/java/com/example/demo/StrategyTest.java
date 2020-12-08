@@ -161,7 +161,7 @@ public class StrategyTest {
 	public void excuteRunListenTest() {
 		guPiaoService.updateHistoryStock("sh600305");
 		guPiaoService.timeInterval("sh600305");
-		dataTask.excuteRunListen("sh600305",appSecret,"20201115");
+		dataTask.excuteRunListen("sh600305",appSecret);
 		while(true) {
 			try {
 				Thread.sleep(10L);

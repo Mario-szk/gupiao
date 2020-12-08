@@ -627,4 +627,22 @@ public class TrendStrategyServiceImpl implements TrendStrategyService {
 		obj.setStopProfit(up.getY()*0.99);
 	}
 
+	@Override
+	public List<RiskStockDo> getTodayList() {
+		try {
+			return riskStockMapper.getTodayList();
+		}catch (Exception e) {
+			return null;
+		}
+	}
+
+	@Override
+	public RiskStockDo getRiskStock(String number) {
+		try {
+			return riskStockMapper.getNumber(number);
+		}catch (Exception e) {
+			return null;
+		}
+	}
+
 }

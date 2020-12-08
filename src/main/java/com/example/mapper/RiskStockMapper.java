@@ -1,5 +1,7 @@
 package com.example.mapper;
 
+import java.util.List;
+
 import com.example.model.RiskStockDo;
 
 public interface RiskStockMapper {
@@ -9,4 +11,6 @@ public interface RiskStockMapper {
 	int delete(RiskStockDo obj);
 	
 	RiskStockDo getNumber(String string);
+	
+	List<RiskStockDo> getTodayList();
 }

@@ -20,8 +20,8 @@ public class RedisKeyUtil {
 	}
 	
 	//实时通知降噪
-	public static String getRealTimeNotify(String number) {
-		return "realtime_"+dateformat.format(new Date())+"_"+number;
+	public static String getRealTimeNotify(String number,String tag) {
+		return "realtime_"+dateformat.format(new Date())+"_"+number+"_"+tag;
 	}
 	
 	//个股波段分析

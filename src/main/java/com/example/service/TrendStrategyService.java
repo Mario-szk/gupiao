@@ -12,6 +12,7 @@ import com.example.model.HistoryDayStockDo;
 import com.example.model.HistoryPriceDo;
 import com.example.model.MockLog;
 import com.example.model.RealTimeDo;
+import com.example.model.RiskStockDo;
 import com.example.model.RobotAccountDo;
 import com.example.model.RobotSetDo;
 import com.example.model.StockPriceVo;
@@ -124,4 +125,8 @@ public interface TrendStrategyService {
 	MAEntity buildMaEntry(List<StockPriceVo> list);
 	
 	void reRisk(String number);
+	
+	List<RiskStockDo> getTodayList();
+	
+	RiskStockDo getRiskStock(String number);
 }

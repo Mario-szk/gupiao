@@ -24,9 +24,10 @@ import org.springframework.stereotype.Service;
 import com.alibaba.fastjson.JSON;
 import com.example.demo.GuPiao;
 import com.example.model.GuPiaoDo;
-import com.example.model.HistoryPriceDo;
+import com.example.model.RiskStockDo;
 import com.example.model.SubscriptionDo;
 import com.example.service.GuPiaoService;
+import com.example.service.TrendStrategyService;
 import com.example.uitls.DateUtils;
 import com.example.uitls.DingTalkRobotHTTPUtil;
 import com.example.uitls.ReadApiUrl;
@@ -43,6 +44,10 @@ public class MonitorRiskTask {
 
 	@Autowired
 	private GuPiaoService guPiaoService;
+	
+	@Autowired
+	private TrendStrategyService trendStrategyService;
+	
 	@Autowired
 	private ReadApiUrl apiUrl;
 	@Resource
@@ -84,11 +89,11 @@ public class MonitorRiskTask {
 	private Boolean getRealTimeStatus(String number) {
 		return (Boolean)redisUtil.get(RedisKeyUtil.getRealTimeStatus(number));
 	}
-	private void setNotify(String number,Boolean isNotify) {
-		redisUtil.set(RedisKeyUtil.getRealTimeNotify(number), isNotify,1800L);
+	private void setNotify(String number,String tag,Boolean isNotify) {
+		redisUtil.set(RedisKeyUtil.getRealTimeNotify(number,tag), isNotify,1800L);
 	}
-	private Boolean getNotify(String number) {
-		return (Boolean)redisUtil.get(RedisKeyUtil.getRealTimeNotify(number));
+	private Boolean getNotify(String number,String tag) {
+		return (Boolean)redisUtil.get(RedisKeyUtil.getRealTimeNotify(number,tag));
 	}
 
 	private void listenRealTime(final String number,final String appSecret) throws Exception {
@@ -106,108 +111,119 @@ public class MonitorRiskTask {
 			return;
 		}
 		
-		//获取走势
-		HistoryPriceDo riskPrice=guPiaoService.getLastZhichengwei(number);
-		if(riskPrice == null || riskPrice.getZhichengwei() == null) {
-			logger.info("找不到最近一次指标："+number);
+		//风险指标
+		RiskStockDo riskPrice=trendStrategyService.getRiskStock(number);
+		if(riskPrice == null ) {
+			logger.error("找不到风控规则指标："+number);
 			return;
 		}
 		Boolean status= getRealTimeStatus(number);
-		Boolean isNotify = getNotify(number);
-		//通知开关
-		if(isNotify == null) {
-			isNotify=true;
-			setNotify(number,isNotify);
+		
+		//弱势 当前价格小于20天线
+		if(nowPrice.getDangqianjiage()<riskPrice.getBollDayMid() && status == null) {
+				String content = MessageFormat.format("GS【诊断股票走势】"+dateformat.format(now)
+		        +"\n------------------------------------ \n股票代码：{0}\n股票名称：{1}\n压力位置:{2}\n变盘位置:{3}\n支撑位置:{4}\n当前价格:{5}\n当前趋势:{6}", 
+                 new Object[] {date.getNumber(), 
+        		 date.getName(), 
+        		 riskPrice.getBollDayUp(),
+        		 riskPrice.getBollDayMid(),
+        		 riskPrice.getBollDayLower(),
+        		 df.format(nowPrice.getDangqianjiage()), 
+        		 "目前属于弱趋势"});
+				logger.info(content);
+				SendMsg(number, appSecret, content,"init");
+				setRealTimeStatus(number,true);
+				return;
+		}
+		if(nowPrice.getDangqianjiage()>=riskPrice.getBollDayMid() && status == null){
+				String content = MessageFormat.format("GS【诊断股票走势】"+dateformat.format(now)
+		        +"\n------------------------------------ \n股票代码：{0}\n股票名称：{1}\n压力位置:{2}\n变盘位置:{3}\n支撑位置:{4}\n当前价格:{5}\n当前趋势:{6}", 
+	             new Object[] {date.getNumber(), 
+	    		 date.getName(), 
+	    		 riskPrice.getBollDayUp(),
+	    		 riskPrice.getBollDayMid(),
+	    		 riskPrice.getBollDayLower(),
+	    		 df.format(nowPrice.getDangqianjiage()), 
+	    		 "目前属于强趋势"});
+				logger.info(content);
+				SendMsg(number, appSecret, content,"init");
+				setRealTimeStatus(number,true);
+				return;
 		}
 		
 		//止损 当前价格低于历史支撑位
-		if(nowPrice.getDangqianjiage()<=riskPrice.getZhichengwei().doubleValue() ) {
-			String content = MessageFormat.format("GS【止损预警提示】"+dateformat.format(now)
-	        +"\n------------------------------------ \n股票代码：{0}\n股票名称：{1}\n压力位置:{2}\n当前价格:{3}\n策略规则:{4}", 
+		if(nowPrice.getDangqianjiage()<=riskPrice.getStopLoss()) {
+			String content = MessageFormat.format("GS【止损通知】"+dateformat.format(now)
+	        +"\n------------------------------------ \n股票代码：{0}\n股票名称：{1}\n压力位置:{2}\n变盘位置:{3}\n支撑位置:{4}\n当前价格:{5}\n当前趋势:{6}", 
 	        		                 new Object[] {date.getNumber(), 
 	        		        		 date.getName(), 
-	        		        		 riskPrice.getMa20().doubleValue(),
+	        		        		 riskPrice.getBollDayUp(),
+	        		        		 riskPrice.getBollDayMid(),
+	        		        		 riskPrice.getBollDayLower(),
 	        		        		 df.format(nowPrice.getDangqianjiage()), 
-	        		        		 "股价已经破位，请及时止损！！"});
-			riskPrice.setZhichengwei(new BigDecimal(nowPrice.getDangqianjiage()).setScale(2));
+	        		        		 "跌破支撑位置，请判断实际情况进行止操作"});
+			riskPrice.setStopLoss(nowPrice.getDangqianjiage());
 			String key=RedisKeyUtil.getLastHistoryPrice(number, DateUtils.getToday());
 			redisUtil.set(key, JSON.toJSONString(riskPrice),86400L);
 			logger.info(content);
-			if(isNotify) {
-				DingTalkRobotHTTPUtil.sendMsg(appSecret, content, null, false);
-				setNotify(number,false);
-			}
+			SendMsg(number, appSecret, content,"stoploss");
+			return;
 		}
-		
-		//弱势 当前价格小于20天线
-		if(nowPrice.getDangqianjiage()<riskPrice.getMa20().doubleValue()) {
-			if(status == null) {
-				String content = MessageFormat.format("GS【诊断股票走势】"+dateformat.format(now)
-		        +"\n------------------------------------ \n股票代码：{0}\n股票名称：{1}\n当前能量值:{2}\n压力位置:{3}\n当前价格:{4}\n支撑位置:{5}\n当前趋势:{6}", 
-		        		                 new Object[] {date.getNumber(), 
-		        		        		 date.getName(), 
-		        		        		 riskPrice.getPowerValue(),
-		        		        		 riskPrice.getMa20().doubleValue(),
-		        		        		 df.format(nowPrice.getDangqianjiage()), 
-		        		        		 riskPrice.getZhichengwei().doubleValue(),
-		        		        		 "目前属于下滑趋势"});
-				logger.info(content);
-				if(isNotify) {
-					DingTalkRobotHTTPUtil.sendMsg(appSecret, content, null, false);
-				}
-				setRealTimeStatus(number,true);
-				return;
-			}
-			
-//				if(!status) {
-//					String content = MessageFormat.format("GS【卖出信号提示】"+dateformat.format(now)
-//			        +"\n------------------------------------ \n股票代码：{0}\n股票名称：{1}\n条件价格:{2}\n当前价格:{3}\n策略规则:{4}", 
-//			        		                 new Object[] {date.getNumber(), 
-//			        		        		 date.getName(), 
-//			        		        		 riskPrice.getMa20().doubleValue(),
-//			        		        		 df.format(nowPrice.getDangqianjiage()), 
-//			        		        		 "当前股票从强转弱趋势，请及时止盈或止损"});
-//					logger.info(content);
-//					if(isNotify) {
-//						DingTalkRobotHTTPUtil.sendMsg(appSecret, content, null, false);
-//						setNotify(number,false);
-//					}
-//					setRealTimeStatus(number,true);
-//				}
+				
+		if(nowPrice.getDangqianjiage()>=riskPrice.getStopProfit() && status!=null) {	
+					String content = MessageFormat.format("GS【止盈卖出提示】"+dateformat.format(now)
+					 +"\n------------------------------------ \n股票代码：{0}\n股票名称：{1}\n压力位置:{2}\n变盘位置:{3}\n支撑位置:{4}\n当前价格:{5}\n当前趋势:{6}", 
+	                 new Object[] {date.getNumber(), 
+	        		 date.getName(), 
+	        		 riskPrice.getBollDayUp(),
+	        		 riskPrice.getBollDayMid(),
+	        		 riskPrice.getBollDayLower(),
+	        		 df.format(nowPrice.getDangqianjiage()), 
+			         "请判断情况，适当止盈，检查交易量，KDJ,MACD等指标"});
+					logger.info(content);
+					SendMsg(number, appSecret, content,"sell");
+					return;
 		}
-		
-		//强势 当前价格大于20天线
-		if(nowPrice.getDangqianjiage()>=riskPrice.getMa20().doubleValue()){
-			if(status == null) {
-				String content = MessageFormat.format("GS【诊断股票走势】"+dateformat.format(now)
-				  +"\n------------------------------------ \n股票代码：{0}\n股票名称：{1}\n当前能量值:{2}\n压力位置:{3}\n当前价格:{4}\n支撑位置:{5}\n当前趋势:{6}", 
-		        		                 new Object[] {date.getNumber(), 
-		        		        		 date.getName(), 
-		        		        		 riskPrice.getPowerValue(),
-		        		        		 riskPrice.getYaliwei(),
-		        		        		 df.format(nowPrice.getDangqianjiage()), 
-		        		        		 riskPrice.getMa20().doubleValue(),
-		        		        		 "目前属于上升趋势"});
-				logger.info(content);
-				DingTalkRobotHTTPUtil.sendMsg(appSecret, content, null, false);
-				setRealTimeStatus(number,false);
-				return;
-			}
-			if(status) {
-				String content = MessageFormat.format("GS【买入信号提示】"+dateformat.format(now)
-		        +"\n------------------------------------ \n股票代码：{0}\n股票名称：{1}\n条件价格:{2}\n当前价格:{3}\n策略规则:{4}", 
-		        		                 new Object[] {date.getNumber(), 
-		        		        		 date.getName(), 
-		        		        		 riskPrice.getMa20().doubleValue(),
-		        		        		 df.format(nowPrice.getDangqianjiage()), 
-		        		        		 "当前股价从弱转强，请配合趋势买入股票"});
-				logger.info(content);
-				if(isNotify) {
-					DingTalkRobotHTTPUtil.sendMsg(appSecret, content, null, false);
-					setNotify(number,false);
-				}
-				setRealTimeStatus(number,false);
-			}
+		if(nowPrice.getDangqianjiage()>=riskPrice.getBuyPointBegin() && nowPrice.getDangqianjiage()<=riskPrice.getBuyPointEnd() && status!=null) {	
+			String content = MessageFormat.format("GS【买入信号提示】"+dateformat.format(now)
+			 +"\n------------------------------------ \n股票代码：{0}\n股票名称：{1}\n压力位置:{2}\n变盘位置:{3}\n支撑位置:{4}\n当前价格:{5}\n当前趋势:{6}", 
+	            new Object[] {date.getNumber(), 
+		   		 date.getName(), 
+		   		 riskPrice.getBollDayUp(),
+		   		 riskPrice.getBollDayMid(),
+		   		 riskPrice.getBollDayLower(),
+		   		 df.format(nowPrice.getDangqianjiage()), 
+		         "请判断情况，适当建仓，检查交易量，KDJ,MACD方向提示"});
+			logger.info(content);
+			SendMsg(number, appSecret, content,"buy");
+		}
+		if(nowPrice.getChengjiaogupiao().longValue()>=riskPrice.getTop5volume()*3) {	
+			String content = MessageFormat.format("GS【交易量大于暴增】"+dateformat.format(now)
+			 +"\n------------------------------------ \n股票代码：{0}\n股票名称：{1}\n压力位置:{2}\n变盘位置:{3}\n支撑位置:{4}\n当前价格:{5}\n当前趋势:{6}", 
+	            new Object[] {date.getNumber(), 
+		   		 date.getName(), 
+		   		 riskPrice.getBollDayUp(),
+		   		 riskPrice.getBollDayMid(),
+		   		 riskPrice.getBollDayLower(),
+		   		 df.format(nowPrice.getDangqianjiage()), 
+		         "出现放量情况，请注意走势动向把握机会"});
+			logger.info(content);
+			SendMsg(number, appSecret, content,"bigVolume");
+		}
+	}
+
+
+	private void SendMsg(final String number, final String appSecret, String content,String tag) {
+		Boolean isNotify;
+		isNotify=getNotify(number,tag);
+		if(isNotify==null) {
+			isNotify=true;
+			setNotify(number,tag,isNotify);
+		}
+		if(isNotify) {
+			DingTalkRobotHTTPUtil.sendMsg(appSecret, content, null, false);
+			isNotify=false;
+			setNotify(number,tag,isNotify);
 		}
 	}
 }

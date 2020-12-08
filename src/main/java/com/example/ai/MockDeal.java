@@ -276,22 +276,6 @@ public class MockDeal {
 						//logger.info(log);
 						//mockLog.setLogs(mockLog.getLogs()+log+"\n");
 					}
-					if(StringUtils.containsIgnoreCase(price.getNumber(), "sh600438") && StringUtils.containsIgnoreCase(sdf.format(price.getDateime()), "2020-10-23 11:30:00")) {
-						num = (int) Math.floor(total / (28.17 * 100));
-						total = total - price.getShoupanjia().doubleValue() * 100 * num;
-						String log=" 买入信号点--上升波段启动==> "
-								+ sdf.format(price.getDateime()) 
-								//+ " 能量值：" + powerValue 
-								//+ " 偏离值："+ (price.getMa20().longValue()/price.getShoupanjia().doubleValue())
-								//+ " 20价格：" + price.getMa20()
-								+ " 价格：" + price.getShoupanjia() 
-								+ " 数量：" + (num * 100)
-								+ " 余额：" + df.format(total);
-						logger.info(log);
-						mockLog.setLastBuyin(date);
-						mockLog.setLogs(mockLog.getLogs()+log+"\n");
-						buyPorintMap.put(buyKey, false);
-					}
 					BigDecimal maybePrice=price.getMa20().multiply(new BigDecimal("1.02"));
 					if (num <= 0 && price.getShoupanjia().compareTo(maybePrice) == -1 && powerValue >= 0 && powerValue <20  && buyPorintMap.get(buyKey) && price.isUp()) {
 						
@@ -304,20 +288,20 @@ public class MockDeal {
 							log=" 小量买入观察 当前买入点==> "
 									+ sdf.format(price.getDateime()) 
 									//+ " 能量值：" + powerValue 
-									+ " 价格：" + price.getShoupanjia() 
-									+ " 数量：" + (num * 100)
-									+ " 余额：" + df.format(total);
+									+ " 买入价格价格：" + price.getShoupanjia() ;
+//									+ " 数量：" + (num * 100)
+//									+ " 余额：" + df.format(total);
 						}else {
 							num = (int) Math.floor(total / (price.getShoupanjia().doubleValue() * 100));
 							total = total - price.getShoupanjia().doubleValue() * 100 * num;
-							log=" 买入信号点--上升波段启动==> "
+							log=" 买入信号点==> "
 									+ sdf.format(price.getDateime()) 
 									//+ " 能量值：" + powerValue 
 									//+ " 偏离值："+ (price.getMa20().longValue()/price.getShoupanjia().doubleValue())
 									//+ " 20价格：" + price.getMa20()
-									+ " 价格：" + price.getShoupanjia() 
-									+ " 数量：" + (num * 100)
-									+ " 余额：" + df.format(total);
+									+ " 买入价格：" + price.getShoupanjia() ;
+//									+ " 数量：" + (num * 100)
+//									+ " 余额：" + df.format(total);
 						}
 						logger.info(log);
 						mockLog.setLastBuyin(date);
@@ -360,14 +344,14 @@ public class MockDeal {
 						double win = total - init;
 						allwin = allwin + win;
 						num = 0;
-						String log=" 止损卖出--下跌波段加速==> "
+						String log=" 止损卖出==> "
 								+ sdf.format(price.getDateime()) 
 							//	+ " 能量值：" + powerValue 
-								+ " 价格：" + df.format(price.getShoupanjia()) 
-								+ " 盈利：" + df.format(win)
-								+ " 盈利率：" + df.format((win / init) * 100) 
-								+ "% 累计:" + df.format(allwin) 
-								+ " 累计盈利率:" + df.format((allwin / init) * 100) + "%\n";
+								+ " 卖出价格：" + df.format(price.getShoupanjia()) 
+//								+ " 盈利：" + df.format(win)
+								+ " 本次盈利率：" + df.format((win / init) * 100) + "%" ;
+//								+ "% 累计:" + df.format(allwin) 
+//								+ " 累计盈利率:" + df.format((allwin / init) * 100) + "%\n";
 						logger.info(log);
 						mockLog.setFail(mockLog.getFail()+1);
 						mockLog.setLogs(mockLog.getLogs()+log+"\n");
@@ -381,15 +365,15 @@ public class MockDeal {
 						double win = total - init;
 						allwin = allwin + win;
 						num = 0;
-						String log=" 卖出信号点--下跌波段启动==> "
+						String log=" 卖出信号点==> "
 						+ sdf.format(price.getDateime()) 
 					//	+ " 能量值：" + powerValue 
-						+ " 价格：" + df.format(price.getShoupanjia()) 
-						+ " 净利价：" + df.format(price.getShoupanjia().subtract(keepPrice))
-						+ " 盈利：" + df.format(win)
-						+ " 盈利率：" + df.format((win / init) * 100) 
-						+ "% 累计:" + df.format(allwin) 
-						+ " 累计盈利率:" + df.format((allwin / init) * 100) + "%\n";
+						+ " 卖出价格：" + df.format(price.getShoupanjia()) 
+//						+ " 净利价：" + df.format(price.getShoupanjia().subtract(keepPrice))
+//						+ " 盈利：" + df.format(win)
+						+ " 盈利率：" + df.format((win / init) * 100)  + "%";
+//						+ "% 累计:" + df.format(allwin) 
+//						+ " 累计盈利率:" + df.format((allwin / init) * 100) + "%\n";
 						logger.info(log);
 						mockLog.setSuccess(mockLog.getSuccess()+1);
 						mockLog.setLogs(mockLog.getLogs()+log+"\n");
@@ -437,10 +421,10 @@ public class MockDeal {
 				 +"\n 股票编码："+ mockLog.getNumber()
 				 +"\n 股票名称："+mockLog.getName()
 				 +"\n 回测数据："+sdf.format(mockLog.getBeginTime())+"~"+sdf.format(mockLog.getEndTime())
-				 +"\n 初始资金："+df.format(init)
+//				 +"\n 初始资金："+df.format(init)
 				 +"\n 成功次数："+mockLog.getSuccess()
 				 +"\n 失败次数："+mockLog.getFail()
-				 +"\n 总盈利："+df.format(mockLog.getWin())
+//				 +"\n 总盈利："+df.format(mockLog.getWin())
 				 +"\n 总盈利率："+df.format(mockLog.getWinRate())+"%"
 				 +"\n ======操作记录===================="
 				 +"\n"+context;

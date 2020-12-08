@@ -40,6 +40,13 @@
 		WHERE number = #{number} AND status=1
 		limit 1
 	</select>
+	
+	<select id="getTodayList" parameterType="string" resultMap="riskStockDo">
+		SELECT
+		<include refid="All_Column" />
+		FROM risk_stock
+		WHERE ema144 > ema89 and close >ema144 and ema89 > open
+	</select>
 
 	<insert id="insert" parameterType="riskStockDo">
 		INSERT INTO

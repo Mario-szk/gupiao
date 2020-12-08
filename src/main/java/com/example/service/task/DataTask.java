@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -24,12 +25,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import com.example.ai.MockDeal;
 import com.example.demo.GuPiao;
 import com.example.mapper.HistoryDayStockMapper;
 import com.example.model.GuPiaoDo;
 import com.example.model.HistoryDayStockDo;
 import com.example.model.HistoryStockDo;
+import com.example.model.MockLog;
 import com.example.model.RealTimeDo;
+import com.example.model.RiskStockDo;
 import com.example.model.RobotAccountDo;
 import com.example.model.RobotSetDo;
 import com.example.model.StockDo;
@@ -62,11 +66,14 @@ public class DataTask  implements InitializingBean {
 	private HistoryDayStockMapper historyDayStockMapper;
 	@Autowired
 	private TrendStrategyService trendStrategyService;
+	@Autowired
+	private MockDeal mockDeal;
+	
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		String robotbuy = MessageFormat.format("【初始化股票池】 \n 初始化股票池数量："  + init(),new Object[] {});
         DingTalkRobotHTTPUtil.sendMsg(DingTalkRobotHTTPUtil.APP_TEST_SECRET, robotbuy, null, false);
-        updateRisk();
+        todayList();
 	}
 	
 	/**
@@ -204,25 +211,40 @@ public class DataTask  implements InitializingBean {
 		for(StockDo stock:stockList) {
 			trendStrategyService.reRisk(stock.getNumber());
 		}
+		todayList();
 		bs=System.currentTimeMillis()-bs;
 		robotbuy = MessageFormat.format("GS----更新风险线完毕-------耗时："+bs+" ms",new Object[] {});
         DingTalkRobotHTTPUtil.sendMsg(DingTalkRobotHTTPUtil.APP_TEST_SECRET, robotbuy, null, false);
 	}
+
+	/**
+	 * 每天推荐
+	 */
+	private void todayList() {
+		List<RiskStockDo> list=trendStrategyService.getTodayList();
+		if(list!=null) {
+			for(RiskStockDo rs:list) {
+				redisUtil.del(RedisKeyUtil.getBoduanNotify(rs.getNumber(),DingTalkRobotHTTPUtil.APP_TEST_SECRET));
+				excuteRunListen(rs.getNumber(),DingTalkRobotHTTPUtil.APP_TEST_SECRET);
+			}
+		}
+	}
 	
 	
+
 	/**
 	 * 关注个股，显示操作
 	 */
-	@Scheduled(cron = "0 30 9-11,13-14 * * MON-FRI")
+	@Scheduled(cron = "0 0 9-11,13-14 * * MON-FRI")
 	private void showBoduan() {
 		List<SubscriptionDo> list=guPiaoService.listMemberAll();
 		for(SubscriptionDo realTime:list) {
 			if(!StringUtils.equals(realTime.getNumber(), "0")) {
-				excuteRunListen(realTime.getNumber(),realTime.getDingtalkId(),realTime.getBegintime());
+				excuteRunListen(realTime.getNumber(),realTime.getDingtalkId());
 			}
 		}
 	}
-	public void excuteRunListen(final String number,final String appSecret,final String beginTime) {
+	public void excuteRunListen(final String number,final String appSecret) {
 		pool.execute(new Runnable() {
 			@Override
 			public void run() {
@@ -232,44 +254,59 @@ public class DataTask  implements InitializingBean {
 					if(isNotifyByMock == null || isNotifyByMock) {
 						isNotifyByMock=true;
 					}
-					List<HistoryStockDo> list= guPiaoService.getLastHistoryStock(number,2);
-					String msg="GS========超短线策略波段分析(3-5天)=========GS"
-							+ "\n 股票编号："+number
-							+ "\n 股票名称："+(String)redisUtil.get(RedisKeyUtil.getStockName(number))
-							+ "\n";
-					for(HistoryStockDo stock:list) {
-						msg=msg+stock.getRemark();
-					}
-					msg = updateMsg(number, msg);
-					logger.info(msg);
 					
+					RiskStockDo rs=trendStrategyService.getRiskStock(number);
+					Calendar calendar = Calendar.getInstance();  
+					calendar.add(Calendar.DATE, -15);
+					SimpleDateFormat dateformat = new SimpleDateFormat("yyyy-MM-dd");
+					MockLog log=mockDeal.mockDeal(number, dateformat.format(calendar.getTime()),DingTalkRobotHTTPUtil.APP_TEST_SECRET,false);
+					log.setLogs(log.getLogs().replace("测试AI操盘", "个股关注(操盘策略)"));
+					String msg=log.getLogs();
+					if(rs==null) {
+						msg=msg+"\n 找不到分析数据，请联系管理员！股票号码："+number;
+					}else {
+						String tg="技术线一般";
+						if(rs.getMa5()>rs.getMa20() && rs.getMa20()>rs.getMa200()) {
+							tg="多头排列，值得持有,建议逢低加仓";
+						} 
+						if(rs.getMa5()<rs.getMa20() && rs.getMa20()<rs.getMa200()) {
+							tg="危险的股票，小心创新低,建议逢高减仓";
+						}
+						if(rs.getClose()<rs.getBollDayMid()) {
+							tg+=",目前趋势很弱";
+						}
+						if(rs.getClose()>rs.getBollDayMid()) {
+							tg+=",目前趋势很强";
+						}
+						if(rs.getOpen()<rs.getEma89() && rs.getClose()>rs.getEma144() && rs.getEma89()<rs.getEma144()) {
+							tg+=",需要注意能量配合";
+						}
+						if(rs.getClose()<rs.getBuyPointEnd()&&rs.getClose()>rs.getBuyPointBegin()) {
+							tg+=",目前是买入区间，可以分批建仓";
+						}
+					msg=msg
+					+"\n 开盘价："+rs.getOpen()
+					+"\n 收盘价："+rs.getClose()
+					+"\n 压力位："+(rs.getClose()>=rs.getBollDayMid()?rs.getBollDayUp():rs.getBollDayMid())
+					+"\n 支撑位置："+(rs.getClose()>=rs.getBollDayMid()?rs.getBollDayMid():rs.getBollDayLower())
+					+"\n 买入区间："+rs.getBuyPointBegin()+"~"+rs.getBuyPointEnd()
+					+"\n 目标价："+rs.getStopProfit()
+					+"\n 止损位："+rs.getStopLoss()
+					+"\n 平均能量："+rs.getTop5volume()
+					+"\n 技术分析："+tg
+					+"\n";
+					;
+					}
 					if(isNotifyByMock) {
 						DingTalkRobotHTTPUtil.sendMsg(appSecret, msg, null, false);
 						isNotifyByMock=false;
 					}
-					redisUtil.set(RedisKeyUtil.getBoduanNotify(number, appSecret),isNotifyByMock,86400L);
+					redisUtil.set(RedisKeyUtil.getBoduanNotify(number, appSecret),isNotifyByMock,3600L);
 				} catch (Exception e) {
 					logger.error("异常个股波段分析:"+"number:"+number+"-->"+e.getMessage(),e);
 				}
 			}
 
-			private String updateMsg(final String number, String msg) {
-				try {
-					guPiaoService.updateHistoryStock(number);
-					guPiaoService.timeInterval(number);
-					List<StockPriceVo> spList=trendStrategyService.transformByDayLine(historyDayStockMapper.getNumber(number));
-					RobotAccountDo account=new RobotAccountDo();
-					RobotSetDo config=new RobotSetDo();
-					account.setTotal(new BigDecimal(100000));
-					List<TradingRecordDo> rtList=trendStrategyService.getStrateByBoll(spList, account, config);
-					if(rtList!=null && rtList.size() >1) {
-						msg=msg+rtList.get(rtList.size()-1).getRemark();
-					}
-				} catch (Exception e) {
-					logger.error("updateMsg:"+"number:"+number+"-->"+e.getMessage(),e);
-				}
-				return msg;
-			}
 		});
 	}
 	
