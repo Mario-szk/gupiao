@@ -211,7 +211,6 @@ public class DataTask  implements InitializingBean {
 		for(StockDo stock:stockList) {
 			trendStrategyService.reRisk(stock.getNumber());
 		}
-		todayList();
 		bs=System.currentTimeMillis()-bs;
 		robotbuy = MessageFormat.format("GS----更新风险线完毕-------耗时："+bs+" ms",new Object[] {});
         DingTalkRobotHTTPUtil.sendMsg(DingTalkRobotHTTPUtil.APP_TEST_SECRET, robotbuy, null, false);
@@ -220,6 +219,7 @@ public class DataTask  implements InitializingBean {
 	/**
 	 * 每天推荐
 	 */
+	@Scheduled(cron = "0 30 9 * * MON-FRI")
 	private void todayList() {
 		List<RiskStockDo> list=trendStrategyService.getTodayList();
 		if(list!=null) {
