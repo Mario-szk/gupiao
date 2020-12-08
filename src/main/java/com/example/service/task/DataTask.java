@@ -66,6 +66,7 @@ public class DataTask  implements InitializingBean {
 	public void afterPropertiesSet() throws Exception {
 		String robotbuy = MessageFormat.format("【初始化股票池】 \n 初始化股票池数量："  + init(),new Object[] {});
         DingTalkRobotHTTPUtil.sendMsg(DingTalkRobotHTTPUtil.APP_TEST_SECRET, robotbuy, null, false);
+        updateRisk();
 	}
 	
 	/**
@@ -194,12 +195,18 @@ public class DataTask  implements InitializingBean {
 	/**
 	 * 补风险线
 	 */
-	@Scheduled(cron = "0 25 9,16 * * MON-FRI")
+	@Scheduled(cron = "0 0 16 * * MON-FRI")
 	private void updateRisk() {
 		List<StockDo> stockList = guPiaoService.getAllStock();
+		String robotbuy = MessageFormat.format("GS----开始更新风险线-------一共："+stockList.size(),new Object[] {});
+		long bs=System.currentTimeMillis();
+        DingTalkRobotHTTPUtil.sendMsg(DingTalkRobotHTTPUtil.APP_TEST_SECRET, robotbuy, null, false);
 		for(StockDo stock:stockList) {
 			trendStrategyService.reRisk(stock.getNumber());
 		}
+		bs=System.currentTimeMillis()-bs;
+		robotbuy = MessageFormat.format("GS----更新风险线完毕-------耗时："+bs+" ms",new Object[] {});
+        DingTalkRobotHTTPUtil.sendMsg(DingTalkRobotHTTPUtil.APP_TEST_SECRET, robotbuy, null, false);
 	}
 	
 	

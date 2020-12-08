@@ -47,7 +47,7 @@
 		(update_time,number,name,top5volume,ma5,ma20,ma200,ema89,ema144,
 		boll_day_up,boll_day_mid,boll_day_lower,stop_profit,stop_loss,buy_point_begin,buy_point_end,status,open,close)
 		VALUES
-		(#{updateTime},#{number},#{name},#{top5volume},#{ma5},#{ma20},#{ma200},#{ema89},#{ema144},
+		(now(),#{number},#{name},#{top5volume},#{ma5},#{ma20},#{ma200},#{ema89},#{ema144},
 		#{bollDayUp},#{bollDayMid},#{bollDayLower},#{stopProfit},#{stopLoss},#{buyPointBegin},#{buyPointEnd},#{status},#{open},#{close})
 	</insert>
 	
