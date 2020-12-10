@@ -73,11 +73,11 @@ public class UpdateRealTimeTask  implements Runnable {
 						isNotify=true;
 						setNotify(number,tag,isNotify);
 					}
-					if(model.getChengjiaogupiao() > (riskStock.getTop5volume()*3) && isNotify) {
-						String content="TEST=========成交量比5日内平均成交量高3倍==========\n股票编码："+number
+					if(model.getChengjiaogupiao().longValue() > (riskStock.getTop5volume()*2) && isNotify) {
+						String content="TEST=========成交量比5日内平均成交量高2倍==========\n股票编码："+number
 								+"\n股票名称："+model.getName()
-								+"\n今天成交量："+model.getChengjiaogupiao()
-								+"\n过去5天成交量："+riskStock.getTop5volume();
+								+"\n现在成交量："+model.getChengjiaogupiao().longValue()
+								+"\n过去成交量："+riskStock.getTop5volume();
 						DingTalkRobotHTTPUtil.sendMsg(appSecret, content, null, false);
 						isNotify=false;
 						setNotify(number,tag,isNotify);
