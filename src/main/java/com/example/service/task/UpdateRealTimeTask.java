@@ -10,7 +10,9 @@ import org.springframework.beans.BeanUtils;
 import com.alibaba.fastjson.JSON;
 import com.example.demo.GuPiao;
 import com.example.model.RealTimeDo;
+import com.example.model.RiskStockDo;
 import com.example.service.GuPiaoService;
+import com.example.uitls.DingTalkRobotHTTPUtil;
 import com.example.uitls.ReadApiUrl;
 import com.example.uitls.RedisKeyUtil;
 import com.example.uitls.RedisUtil;
@@ -54,6 +56,30 @@ public class UpdateRealTimeTask  implements Runnable {
 					String key3 =RedisKeyUtil.getRealTime(number);
 					redisUtil.set(key3, date,30);
 					logger.info("写入缓存成功:"+number+" "+model.getName()+" 时间:"+model.getDate()+" "+model.getTime()+" 当前价格:"+model.getDangqianjiage());
+					String key4 = RedisKeyUtil.getRiskStock(number);
+					if (!redisUtil.hasKey(key4)) {
+						logger.error("查询失败,key不存在:"+key4);
+						return ;
+					}
+					RiskStockDo riskStock =(RiskStockDo)redisUtil.get(key4);
+					if(riskStock ==null ) {
+						logger.error("转换对象失败,检查key的内容:"+key4);
+						return;
+					}
+					String appSecret="bb888ac7199ba68c327c8a0e44fbf0ee6b65b5b0f490beb39a209a295e132a4f";
+					String tag="bigVolume";
+					Boolean isNotify=getNotify(number,tag);
+					if(isNotify==null) {
+						isNotify=true;
+						setNotify(number,tag,isNotify);
+					}
+					if(model.getChengjiaogupiao() > riskStock.getTop5volume()*1.5 && isNotify) {
+						String content="TEST=========成交量比5日内平均成交量高1.5倍==========/n股票编码："+number+"/n股票名称："+model.getName();
+						DingTalkRobotHTTPUtil.sendMsg(appSecret, content, null, false);
+						isNotify=false;
+						setNotify(number,tag,isNotify);
+					}
+					
 				}else {
 					logger.error("查询失败:"+number);
 				}
@@ -62,6 +88,13 @@ public class UpdateRealTimeTask  implements Runnable {
 			}
 	}
 
+	private void setNotify(String number,String tag,Boolean isNotify) {
+		redisUtil.set(RedisKeyUtil.getRealTimeNotify(number,tag), isNotify,1800L);
+	}
+	private Boolean getNotify(String number,String tag) {
+		return (Boolean)redisUtil.get(RedisKeyUtil.getRealTimeNotify(number,tag));
+	}
+	
 	public String getNumber() {
 		return number;
 	}

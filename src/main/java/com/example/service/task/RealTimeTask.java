@@ -17,8 +17,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import com.example.model.RiskStockDo;
 import com.example.model.StockDo;
 import com.example.service.GuPiaoService;
+import com.example.service.TrendStrategyService;
 import com.example.uitls.DateUtils;
 import com.example.uitls.DingTalkRobotHTTPUtil;
 import com.example.uitls.ReadApiUrl;
@@ -31,9 +33,13 @@ public class RealTimeTask implements InitializingBean {
 	@Autowired
 	private GuPiaoService guPiaoService;
 	@Autowired
+	private TrendStrategyService trendStrategyService;
+	@Autowired
 	private ReadApiUrl apiUrl;
 	@Resource
 	private RedisUtil redisUtil;
+	
+	
 	private static String today=DateUtils.getToday();
 	
 	ThreadPoolExecutor  pool1 = new ThreadPoolExecutor(20, 300, 5,TimeUnit.SECONDS,
@@ -74,12 +80,13 @@ public class RealTimeTask implements InitializingBean {
 			list4=list.subList(3*k, 4*k);
 			list5=list.subList(4*k, list.size());
 			today=DateUtils.getToday();
+			updateRiskStock();
 		} catch (Exception e) {
 			logger.warn("init Exception:"+e.getMessage(),e);
 		}
 	}
 	
-	@Scheduled(cron = "0 0 * * * *")
+	@Scheduled(cron = "0 3 * * * *")
 	public void  todayTask() throws Exception {
 		today=DateUtils.getToday();
 	}
@@ -104,6 +111,30 @@ public class RealTimeTask implements InitializingBean {
 	public void  task5() throws Exception {
 		updateCache(list5,pool5);
 	}
+	
+	@Scheduled(cron = "0 * 9-15 * * MON-FRI")
+	public void updateRiskStock() {
+		pool1.execute(new Runnable() {
+			@Override
+			public void run() {
+				for (StockDo stock : list) {
+					try {
+						String key = RedisKeyUtil.getRiskStock(stock.getNumber());
+						if (redisUtil.hasKey(key)) {
+							redisUtil.del(key);
+						}
+						RiskStockDo riskStock = trendStrategyService.getRiskStock(stock.getNumber());
+						if (riskStock != null) {
+							redisUtil.set(key, riskStock, 36000);
+						}
+					} catch (Exception e) {
+						logger.error(e.getMessage(),e);
+					}
+				}
+			}
+		});
+	}
+	
 	
 	//实时更新价格到cache
 	private void updateCache(List<StockDo> stockList,ThreadPoolExecutor  pool) {

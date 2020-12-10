@@ -14,6 +14,11 @@ public class RedisKeyUtil {
 		return "stock_name_"+number;
 	}
 	
+	//股票预警
+	public static String getRiskStock(String number) {
+		return "risk_stock_"+dateformat.format(new Date())+"_"+number;
+	}
+	
 	//复盘数据
 	public static String getRecheckStock(String number) {
 		return "recheck_stock_"+dateformat.format(new Date())+"_"+number;

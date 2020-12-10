@@ -235,7 +235,7 @@ public class DataTask  implements InitializingBean {
 	/**
 	 * 关注个股，显示操作
 	 */
-	@Scheduled(cron = "0 0 9-11,13-14 * * MON-FRI")
+	@Scheduled(cron = "0 35 9 * * MON-FRI")
 	private void showBoduan() {
 		List<SubscriptionDo> list=guPiaoService.listMemberAll();
 		for(SubscriptionDo realTime:list) {
