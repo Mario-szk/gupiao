@@ -73,8 +73,8 @@ public class UpdateRealTimeTask  implements Runnable {
 						isNotify=true;
 						setNotify(number,tag,isNotify);
 					}
-					if(model.getChengjiaogupiao().longValue() > (riskStock.getTop5volume()*2.5) && isNotify) {
-						String content="GS=========成交量突增==========\n股票编码："+number
+					if(model.getDangqianjiage()>model.getKaipanjia() && model.getChengjiaogupiao().longValue() > (riskStock.getTop5volume()*2.5) && isNotify) {
+						String content="GS=========量价突增==========\n股票编码："+number
 								+"\n股票名称："+model.getName()
 								+"\n开盘价："+model.getKaipanjia()
 								+"\n 现价："+model.getDangqianjiage()
