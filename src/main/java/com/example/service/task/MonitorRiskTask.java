@@ -197,7 +197,7 @@ public class MonitorRiskTask {
 			logger.info(content);
 			SendMsg(number, appSecret, content,"buy");
 		}
-		if(nowPrice.getChengjiaogupiao().longValue()>=riskPrice.getTop5volume()*3) {	
+		if(nowPrice.getChengjiaogupiao()!=null && nowPrice.getChengjiaogupiao().longValue()>=riskPrice.getTop5volume()*3) {	
 			String content = MessageFormat.format("GS【交易量大于暴增】"+dateformat.format(now)
 			 +"\n------------------------------------ \n股票代码：{0}\n股票名称：{1}\n压力位置:{2}\n变盘位置:{3}\n支撑位置:{4}\n当前价格:{5}\n当前趋势:{6}", 
 	            new Object[] {date.getNumber(), 

@@ -74,7 +74,7 @@ public class UpdateRealTimeTask  implements Runnable {
 						setNotify(number,tag,isNotify);
 					}
 					if(model.getChengjiaogupiao() > (riskStock.getTop5volume()*3) && isNotify) {
-						String content="TEST=========成交量比5日内平均成交量高1.5倍==========\n股票编码："+number
+						String content="TEST=========成交量比5日内平均成交量高3倍==========\n股票编码："+number
 								+"\n股票名称："+model.getName()
 								+"\n今天成交量："+model.getChengjiaogupiao()
 								+"\n过去5天成交量："+riskStock.getTop5volume();
