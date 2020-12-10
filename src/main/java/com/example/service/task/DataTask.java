@@ -179,8 +179,20 @@ public class DataTask  implements InitializingBean {
 					}
 				}
 				avg=avg/list.size();
-				RealTimeDo last=list.get(list.size()-1);
+				
 				HistoryDayStockDo obj =new HistoryDayStockDo();
+				RealTimeDo last=(RealTimeDo)map.get(dateStr+"_150000");
+				if(last==null) {
+					last=new RealTimeDo();
+					String cacheKey = RedisKeyUtil.getLastRealTime(stock.getNumber());
+					GuPiao date= (GuPiao)redisUtil.get(cacheKey);
+					if(date==null) {
+						date=apiUrl.readRealTimeUrl(stock.getNumber());
+						last.setChengjiaogupiao(date.getChengjiaogupiao());
+						last.setKaipanjia(date.getKaipanjia());
+						last.setDangqianjiage(date.getDangqianjiage());
+					}
+				}
 				obj.setHistoryDay(dateStr);
 				obj.setNumber(stock.getNumber());
 				obj.setOpen(new BigDecimal(last.getKaipanjia()));

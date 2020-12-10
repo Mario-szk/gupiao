@@ -51,7 +51,10 @@ public class UpdateRealTimeTask  implements Runnable {
 					if(map == null) {
 						map=new HashMap<String,RealTimeDo>();
 					}
-					map.put(model.getDate()+model.getTime(), model);
+					String mapKey=model.getDate()+"_"+model.getTime();
+					mapKey=mapKey.replace("-", "");
+					mapKey=mapKey.replace(":", "");
+					map.put(mapKey, model);
 					redisUtil.set(key2, map,43200);
 					String key3 =RedisKeyUtil.getRealTime(number);
 					redisUtil.set(key3, date,30);

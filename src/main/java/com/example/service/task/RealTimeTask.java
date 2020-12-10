@@ -152,7 +152,7 @@ public class RealTimeTask implements InitializingBean {
 	
 	
 	
-	@Scheduled(cron = "0 0 1 * * *")
+	@Scheduled(cron = "0 20 19 * * *")
 	public void  updateHistoryTask1() {
 		//获取所有股票的历史60分钟数据
 		updateHistoryStock(list1,today,pool1);
@@ -164,7 +164,7 @@ public class RealTimeTask implements InitializingBean {
         DingTalkRobotHTTPUtil.sendMsg(DingTalkRobotHTTPUtil.APP_TEST_SECRET, robotbuy, null, false);
 	}
 	
-	@Scheduled(cron = "0 0 2 * * *")
+	@Scheduled(cron = "0 20 20 * * *")
 	public void  updateHistoryTask2() {
 		updateIntervalHistoryStock(list1,pool1);
 		updateIntervalHistoryStock(list2,pool2);

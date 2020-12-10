@@ -108,7 +108,7 @@ public class ReadApiUrl {
 	public GuPiao readRealTimeUrl(String number) {
 		String url = "http://hq.sinajs.cn/list=" + number;
 		String code = HttpClientUtil.doGet(url);
-		logger.info("http请求:"+url+" return:"+code);
+		logger.debug("http请求:"+url+" return:"+code);
 		for(int i=1;i<=5;i++){
 			if (code != null) {
 				return hanldeData(number, code);
@@ -150,18 +150,32 @@ public class ReadApiUrl {
 	}
 
 	public GuPiao readUrl(String number, boolean isCache) {
-		if(!isCache) {
-			return readRealTimeUrl( number);
+		GuPiao gp =null;
+		try {
+			if(!isCache) {
+				gp= readRealTimeUrl( number);
+				return gp;
+			}
+			String key = RedisKeyUtil.getRealTime(number);
+			if(redisUtil.hasKey(key)) {
+				gp=  (GuPiao)redisUtil.get(key);
+				return gp;
+			}
+			gp=readRealTimeUrl(number);
+			if(gp !=null) {
+				redisUtil.set(key, gp, 10L);
+			}
+		}catch (Exception e) {
+			logger.error("="+number+":"+e.getMessage(),e);
+		}finally {
+			if(gp !=null) {
+				String key = RedisKeyUtil.getLastRealTime(number);
+				redisUtil.set(key, gp, 36000L);
+			}
 		}
 		
-		String key = RedisKeyUtil.getRealTime(number);
-		if(redisUtil.hasKey(key)) {
-			return (GuPiao)redisUtil.get(key);
-		}
-		GuPiao gp=readRealTimeUrl(number);
-		if(gp !=null) {
-			redisUtil.set(key, gp, 10L);
-		}
+		
+		
 		return gp;
 	}
 	

@@ -57,6 +57,10 @@ public class RedisKeyUtil {
 		return "realtime_status_"+dateformat_min.format(new Date())+"_"+number;
 	}
 	
+	public static String getLastRealTime(String number) {
+		return "realtime_last_"+number;
+	}
+	
 	public static String getRealTimeByRealTimeDo(RealTimeDo model) {
 		return "realTime_RealTimeDo_"+model.getNumber()+"_"+model.getDate().replace("-", "")+"_"+model.getTime().replace(":", "");
 	}
