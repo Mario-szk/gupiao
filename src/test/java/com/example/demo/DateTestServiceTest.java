@@ -74,7 +74,7 @@ public class DateTestServiceTest {
 	@Autowired
 	private TrendStrategyService trendStrategyService;
 
-	@Test
+	//@Test
 	public void updateRisk() {
 		List<StockDo> stockList = guPiaoService.getAllStock();
 		for(StockDo stock:stockList) {
@@ -83,7 +83,7 @@ public class DateTestServiceTest {
 	}
 	
 	
-	//@Test
+	@Test
 	public void TestDay() {
 		guPiaoService.updateDayStockByThs();
 	}

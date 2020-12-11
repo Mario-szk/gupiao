@@ -164,7 +164,7 @@ public class RealTimeTask implements InitializingBean {
         DingTalkRobotHTTPUtil.sendMsg(DingTalkRobotHTTPUtil.APP_TEST_SECRET, robotbuy, null, false);
 	}
 	
-	@Scheduled(cron = "0 20 20 * * *")
+	//@Scheduled(cron = "0 20 20 * * *")
 	public void  updateHistoryTask2() {
 		updateIntervalHistoryStock(list1,pool1);
 		updateIntervalHistoryStock(list2,pool2);
