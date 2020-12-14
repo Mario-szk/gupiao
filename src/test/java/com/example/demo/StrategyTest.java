@@ -10,10 +10,15 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.ta4j.core.BarSeries;
+import org.ta4j.core.indicators.EMAIndicator;
+import org.ta4j.core.indicators.MACDIndicator;
+import org.ta4j.core.indicators.helpers.ClosePriceIndicator;
 
 import com.example.chart.base.entity.Entry;
 import com.example.chart.entity.BollEntity;
 import com.example.chart.entity.EMAEntity;
+import com.example.chart.entity.MACDEntity;
 import com.example.chart.entity.MAEntity;
 import com.example.mapper.HistoryDayStockMapper;
 import com.example.mapper.RiskStockMapper;
@@ -54,7 +59,7 @@ public class StrategyTest {
 	private static final SimpleDateFormat DF_YYYY_MM_DD = new SimpleDateFormat("yyyy-MM-dd");// 设置日期格式
 	
 	
-	@Test
+	//@Test
 	public void TestRiskStockMapper() {
 		try {
 			List<StockPriceVo> spList=trendStrategyService.transformByDayLine(historyDayStockMapper.getNumber(number));
@@ -169,6 +174,30 @@ public class StrategyTest {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+		}
+	}
+	@Test
+	public void bulidMacd() {
+		List<StockPriceVo> spList=trendStrategyService.transformByDayLine(historyDayStockMapper.getNumber(number));
+		BarSeries series =trendStrategyService.transformBarSeriesByStockPrice(spList);
+		ClosePriceIndicator closePrice = new ClosePriceIndicator(series);
+		MACDIndicator macd = new MACDIndicator(closePrice, 9, 26);
+		EMAIndicator ema1 = new EMAIndicator(closePrice, 12);
+		EMAIndicator ema2 = new EMAIndicator(closePrice, 26);
+		EMAIndicator ema3 = new EMAIndicator(closePrice, 9);
+		MACDEntity macdEntiry=new MACDEntity();
+		List<Entry> macdList=new ArrayList<Entry>();
+	    List<Entry> diffList=new ArrayList<Entry>();
+	    List<Entry> deaList=new ArrayList<Entry>();
+		
+		for(int i=0;i<spList.size();i++) {
+			double macdValue=macd.getValue(i).doubleValue();
+			double dif=ema1.getValue(i).minus(ema2.getValue(i)).doubleValue();
+			double dem=ema3.getValue(i).doubleValue();
+			macdEntiry.macd.add(new Entry(spList.get(i).getHistoryDay(),macdValue));
+			macdEntiry.diff.add(new Entry(spList.get(i).getHistoryDay(),dif));
+			macdEntiry.dea.add(new Entry(spList.get(i).getHistoryDay(),dem));
+			System.out.println(spList.get(i).getHistoryDay()+"==>"+dif);
 		}
 	}
 }

@@ -1,7 +1,10 @@
 package com.example.service.task;
 
+import java.math.BigDecimal;
 import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingDeque;
@@ -10,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Resource;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -17,8 +21,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import com.example.mapper.HistoryDayStockMapper;
+import com.example.model.HistoryDayStockDo;
 import com.example.model.RiskStockDo;
+import com.example.model.RobotAccountDo;
+import com.example.model.RobotSetDo;
 import com.example.model.StockDo;
+import com.example.model.StockPriceVo;
+import com.example.model.SubscriptionDo;
+import com.example.model.TradingRecordDo;
 import com.example.service.GuPiaoService;
 import com.example.service.TrendStrategyService;
 import com.example.uitls.DateUtils;
@@ -30,6 +41,7 @@ import com.example.uitls.RedisUtil;
 @Service
 public class RealTimeTask implements InitializingBean {
 	private static Logger logger = LoggerFactory.getLogger("real_time");
+	
 	@Autowired
 	private GuPiaoService guPiaoService;
 	@Autowired
@@ -210,4 +222,6 @@ public class RealTimeTask implements InitializingBean {
 			}
 		}
 	}
+	
+	
 }

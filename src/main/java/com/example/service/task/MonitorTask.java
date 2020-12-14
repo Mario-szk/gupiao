@@ -42,7 +42,7 @@ import com.example.uitls.RedisUtil;
 @Service
 public class MonitorTask implements InitializingBean  {
 	private static Logger logger = LoggerFactory.getLogger("task_log");
-	private static Logger ai_logger = LoggerFactory.getLogger("task_log");
+	
 	ThreadPoolExecutor  pool = new ThreadPoolExecutor(20, 100, 1,TimeUnit.SECONDS,
 			new LinkedBlockingDeque<Runnable>(1000), 
 			Executors.defaultThreadFactory(), 
@@ -57,8 +57,7 @@ public class MonitorTask implements InitializingBean  {
 	private RedisUtil redisUtil;
 	@Autowired
 	private TrendStrategyService trendStrategyService;
-	@Autowired
-	private HistoryDayStockMapper historyDayStockMapper;
+	
 	
 	
 	
@@ -179,64 +178,7 @@ public class MonitorTask implements InitializingBean  {
 		
 	}
 	
-	@Scheduled(cron = "0 30 10 * * MON-FRI")
-	public void EmaGupiao() {
-		Calendar now = Calendar.getInstance();  
-		now.add(Calendar.DATE, -1);
-		String today=DF_YYYY_MM_DD_number.format(now.getTime());
-		List<SubscriptionDo> subscriptionList=new ArrayList<SubscriptionDo>();
-		for(SubscriptionDo realTime:guPiaoService.listMemberAll()) {
-			if(StringUtils.equals(realTime.getNumber(), "0")){
-				subscriptionList.add(realTime);
-			}
-		}
-		String logContext="GS===========EMA策略选股=============";
-		for(StockDo stock : guPiaoService.getAllStock()){
-			HistoryDayStockDo obj=new HistoryDayStockDo();
-			obj.setNumber(stock.getNumber()); 
-			obj.setHistoryDay(today);
-			obj=historyDayStockMapper.getByTime(obj);
-			if(obj == null||obj.getClose()==null) {
-				continue;
-			}
-			if(obj.getClose().intValue() >35 || obj.getClose().intValue() <12 ) {
-				continue;
-			}
-			
-			Calendar before = Calendar.getInstance();  
-			before.add(Calendar.DATE, -3);
-			List<StockPriceVo> spList=trendStrategyService.transformByDayLine(historyDayStockMapper.getNumber(stock.getNumber()));
-			RobotAccountDo account=new RobotAccountDo();
-			RobotSetDo config=new RobotSetDo();
-			account.setTotal(new BigDecimal(100000));
-			List<TradingRecordDo> rtList=trendStrategyService.getStrategyByEMA(spList, account, config);
-			for(TradingRecordDo rt:rtList) {
-				System.out.println(logContext);
-				if(rt.getCreateDate().after(before.getTime())) {
-					logContext=logContext
-							+"\n时间:"+DF_YYYY_MM_DD.format(rt.getCreateDate())
-							+"\n股票编号:"+rt.getNumber()
-							+"\n股票名称:"+rt.getName()
-							+"\n当天均价："+rt.getPrice()
-							+"\n"+rt.getRemark()+"\n";
-				}
-			}
-		}
-		ai_logger.info(logContext);
-		for(SubscriptionDo realTime:subscriptionList) {
-			String key=RedisKeyUtil.getEmaStockSellNotify(realTime.getNumber(), realTime.getDingtalkId());
-			Boolean isNotifyByMock=(Boolean)redisUtil.get(key);
-			//通知开关
-			if(isNotifyByMock == null || isNotifyByMock) {
-				isNotifyByMock=true;
-			}
-			if(isNotifyByMock) {
-				isNotifyByMock=false;
-				DingTalkRobotHTTPUtil.sendMsg(realTime.getDingtalkId(), logContext, null, false);
-			}
-			redisUtil.set(key,isNotifyByMock,86400L);
-		}
-	}
+	
 	
 	
 	private String updateMsg(final String number, String msg) {
