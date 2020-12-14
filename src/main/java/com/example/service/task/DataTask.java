@@ -256,12 +256,8 @@ public class DataTask  implements InitializingBean {
 			Calendar before = Calendar.getInstance();  
 			before.add(Calendar.DATE, -3);
 			List<StockPriceVo> spList=trendStrategyService.transformByDayLine(historyDayStockMapper.getNumber(stock.getNumber()));
-			RobotAccountDo account=new RobotAccountDo();
-			RobotSetDo config=new RobotSetDo();
-			account.setTotal(new BigDecimal(100000));
-			List<TradingRecordDo> rtList=trendStrategyService.getStrategyByEMA(spList, account, config);
+			List<TradingRecordDo> rtList=trendStrategyService.getStrategyByEMA(spList);
 			for(TradingRecordDo rt:rtList) {
-				System.out.println(logContext);
 				if(rt.getCreateDate().after(before.getTime())) {
 					logContext=logContext
 							+"\n时间:"+DF_YYYY_MM_DD.format(rt.getCreateDate())

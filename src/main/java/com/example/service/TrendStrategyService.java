@@ -100,13 +100,13 @@ public interface TrendStrategyService {
 	List<TradingRecordDo> getStrategyByMA(List<StockPriceVo> list,RobotAccountDo account,RobotSetDo config);
 	
 	/**
-	 * 指数移动平均线
+	 * EMA买入点
 	 * @param list
 	 * @param account 资金
 	 * @param config  参数
 	 * @return
 	 */
-	List<TradingRecordDo> getStrategyByEMA(List<StockPriceVo> list,RobotAccountDo account,RobotSetDo config);
+	List<TradingRecordDo> getStrategyByEMA(List<StockPriceVo> list);
 	
 	
 	/**

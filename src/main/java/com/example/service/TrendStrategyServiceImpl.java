@@ -267,13 +267,12 @@ public class TrendStrategyServiceImpl implements TrendStrategyService {
 	}
 	
 	@Override
-	public List<TradingRecordDo> getStrategyByEMA(List<StockPriceVo> list, RobotAccountDo account, RobotSetDo config) {
+	public List<TradingRecordDo> getStrategyByEMA(List<StockPriceVo> list ) {
 		List<TradingRecordDo> rslist=new ArrayList<TradingRecordDo>();
 		EMAEntity ema = buildEmaEntry(list);
 	    if(ema==null) {
 	    	return rslist;
 	    }
-		boolean isbuy=false;
 	    for(int i=0;i<list.size();i++) {
 	    	StockPriceVo price=list.get(i);
 	    	//89
@@ -281,8 +280,6 @@ public class TrendStrategyServiceImpl implements TrendStrategyService {
 	    	//144
 	    	Entry maValue2=ema.getEmaList2().get(i);
 	    	double buyPoint=maValue1.getY();
-	    	double sellPoint=buyPoint*1.1;
-	    	double stopLossPoint=maValue2.getY();
 	    	
 	    	
 	    	//趋势判断 10天必须比现在低
@@ -291,16 +288,15 @@ public class TrendStrategyServiceImpl implements TrendStrategyService {
 	    	}
 	    	
 	    	//开盘价在MA1之下，收盘价在MA1之上
-	    	if(i>144&&price.getOpen().doubleValue() <= maValue1.getY() && price.getOpen().doubleValue() <= maValue2.getY() && price.getClose().doubleValue()>=maValue1.getY() && price.getClose().doubleValue() >= maValue2.getY() ) {
-	    		double sotck=account.getTotal().intValue() * 0.2/ (price.getOpen().intValue()*100);
-	    		int num=(int)sotck*100;
+	    	if(i>144 && price.getOpen().doubleValue() <= maValue1.getY() && price.getOpen().doubleValue() <= maValue2.getY() 
+	    			&& price.getClose().doubleValue()>=maValue1.getY() && price.getClose().doubleValue() >= maValue2.getY() ) {
 	    		TradingRecordDo buyRecord=new TradingRecordDo(
 	    				DateUtils.getDateForYYYYMMDDHHMM_NUMBER(price.getHistoryAll()),
 	    				price.getNumber(),
 	    				price.getName(),
-	    				config.getDtId(),
+	    				"test",
 	    				price.getOpen(),
-	    				num,
+	    				100,
 	    				TradingRecordDo.options_buy,
 	    				"买入信号"+getLastPrice(list,i,10)
 	    				);
