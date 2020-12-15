@@ -18,6 +18,7 @@ import com.example.uitls.RedisKeyUtil;
 import com.example.uitls.RedisUtil;
 
 public class UpdateRealTimeTask  implements Runnable {
+	private static Logger ai_logger = LoggerFactory.getLogger("ai_log");
 	private static Logger logger = LoggerFactory.getLogger("real_time");
 	private String number;
 	private GuPiaoService guPiaoService;
@@ -76,20 +77,25 @@ public class UpdateRealTimeTask  implements Runnable {
 						isNotify=true;
 						setNotify(number,tag,isNotify);
 					}
-					if(model.getDangqianjiage()>model.getKaipanjia() && model.getChengjiaogupiao().longValue() > (riskStock.getTop5volume()*2.5) && isNotify) {
+					if(model.getDangqianjiage()>model.getKaipanjia() && model.getDangqianjiage()>riskStock.getBollDayMid() 
+							&& model.getChengjiaogupiao().longValue() > (riskStock.getTop5volume()*5) && isNotify) {
 						String content="GS=========量价突增==========\n股票编码："+number
 								+"\n股票名称："+model.getName()
+								+"\n 上轨价格："+riskStock.getBollDayUp()
+								+"\n 中轨价格："+riskStock.getBollDayMid()
+								+"\n 下轨价格："+riskStock.getBollDayLower()
 								+"\n开盘价："+model.getKaipanjia()
 								+"\n 现价："+model.getDangqianjiage()
 								+"\n现在成交量："+model.getChengjiaogupiao().longValue()
-								+"\n过去成交量："+riskStock.getTop5volume();
+								+"\n过去成交量："+riskStock.getTop5volume()
+								;
 						DingTalkRobotHTTPUtil.sendMsg(appSecret, content, null, false);
 						isNotify=false;
 						setNotify(number,tag,isNotify);
+						ai_logger.info(content);
 					}
-					
 				}else {
-					logger.error("查询失败:"+number);
+					ai_logger.error("查询失败:"+number);
 				}
 			} catch (Exception e) {
 				logger.warn(e.getMessage(),e);
