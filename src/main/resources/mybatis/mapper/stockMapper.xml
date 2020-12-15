@@ -20,7 +20,7 @@
 	<select id="getAll" resultMap="stockDo">
 		SELECT
 		<include refid="All_Column" />
-		FROM stock
+		FROM stock WHERE status =1
 	</select>
 
 	<select id="getNumber" parameterType="string" resultMap="stockDo">

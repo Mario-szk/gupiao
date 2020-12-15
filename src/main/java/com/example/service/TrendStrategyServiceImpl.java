@@ -579,16 +579,14 @@ public class TrendStrategyServiceImpl implements TrendStrategyService {
 			obj.setStatus(1);
 			obj.setOpen(spList.get(spList.size()-1).getOpen().doubleValue());
 			obj.setClose(spList.get(spList.size()-1).getClose().doubleValue());
-			long total=0;
-			for(int i=spList.size()-6;i<spList.size()-1;i++) {
-				total+=spList.get(i).getVolume();
-			}
-			obj.setTop5volume(total/5);
+			
+			obj.setTop5volume(spList.get(spList.size()-1).getVolume());
 			obj.setUpdateTime(new Date());
 			if(riskStockMapper.getNumber(number) != null) {
 				riskStockMapper.delete(obj);
 			}
 			riskStockMapper.insert(obj);
+			System.out.println(number);
 		}catch (Exception e) {
 			// TODO: handle exception
 		}

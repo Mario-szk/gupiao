@@ -78,7 +78,7 @@ public class GupiaoServiceTest {
 	
 	//@Test
 	public void AiBuyIn() {
-		monitorTask.EmaGupiao();
+		dataTask.EmaGupiao();
 	}
 	
 	//@Test

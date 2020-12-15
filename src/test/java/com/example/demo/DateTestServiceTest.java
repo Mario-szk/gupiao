@@ -74,7 +74,10 @@ public class DateTestServiceTest {
 	@Autowired
 	private TrendStrategyService trendStrategyService;
 
-	//@Test
+	/**
+	 * 补风险预警
+	 */
+	@Test
 	public void updateRisk() {
 		List<StockDo> stockList = guPiaoService.getAllStock();
 		for(StockDo stock:stockList) {
@@ -82,16 +85,23 @@ public class DateTestServiceTest {
 		}
 	}
 	
-	
-	@Test
+	/**
+	 * 补日线
+	 */
+	//@Test
 	public void TestDay() {
 		guPiaoService.updateDayStockByThs();
 	}
 	
+	/**
+	 * 补60分线
+	 */
 	//@Test
 	public void Test60Day() {
 		realTimeTask.updateHistoryTask1();
 	}
+	
+	
 	//@Test
 	public void updateHistoryTask2() {
 		realTimeTask.updateHistoryTask2();

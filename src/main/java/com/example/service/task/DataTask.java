@@ -75,7 +75,6 @@ public class DataTask  implements InitializingBean {
 	public void afterPropertiesSet() throws Exception {
 		String robotbuy = MessageFormat.format("【初始化股票池】 \n 初始化股票池数量："  + init(),new Object[] {});
         DingTalkRobotHTTPUtil.sendMsg(DingTalkRobotHTTPUtil.APP_TEST_SECRET, robotbuy, null, false);
-        EmaGupiao();
 	}
 	
 	/**
@@ -142,6 +141,7 @@ public class DataTask  implements InitializingBean {
 		List<StockDo> stockList = guPiaoService.getAllStock();
 		final SimpleDateFormat dateformat = new SimpleDateFormat("yyyyMMdd");
 		String dateStr=dateformat.format(new Date());
+		int i=0;
 		for(StockDo stock:stockList) {
 			RealTimeDo model=new RealTimeDo();
 			model.setNumber(stock.getNumber());
@@ -204,18 +204,18 @@ public class DataTask  implements InitializingBean {
 				obj.setLow(new BigDecimal(low));
 				obj.setVolume(last.getChengjiaogupiao().longValue());
 				if(historyDayStockMapper.getByTime(obj) == null) {
-					System.out.println(obj.getNumber());
 					historyDayStockMapper.insert(obj);
+					i++;
 				}
 			}
         }
-		String robotbuy = MessageFormat.format("更新日线成功" ,new Object[] {});
+		String robotbuy = MessageFormat.format("更新日线成功:"+i ,new Object[] {});
         DingTalkRobotHTTPUtil.sendMsg(DingTalkRobotHTTPUtil.APP_TEST_SECRET, robotbuy, null, false);
         updateRisk();
         EmaGupiao();
 	}
 	
-	private void updateRisk() {
+	public void updateRisk() {
 		List<StockDo> stockList = guPiaoService.getAllStock();
 		String robotbuy = MessageFormat.format("GS----开始更新风险线-------一共："+stockList.size(),new Object[] {});
 		long bs=System.currentTimeMillis();

@@ -92,7 +92,6 @@ public class RealTimeTask implements InitializingBean {
 			list4=list.subList(3*k, 4*k);
 			list5=list.subList(4*k, list.size());
 			today=DateUtils.getToday();
-			updateRiskStock();
 		} catch (Exception e) {
 			logger.warn("init Exception:"+e.getMessage(),e);
 		}

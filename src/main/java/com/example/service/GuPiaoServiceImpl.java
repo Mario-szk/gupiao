@@ -102,7 +102,8 @@ public class GuPiaoServiceImpl implements GuPiaoService, InitializingBean {
 	@Autowired
 	private ReadApiUrl readApiUrl;
 	
-
+	@Autowired
+	private TrendStrategyService trendStrategyService;
 
 	private void updateHistoryStockByDB(List<HistoryStockDo> list,Integer type,String remark) {
 		BigDecimal max=new BigDecimal(0.00);
@@ -481,7 +482,7 @@ public class GuPiaoServiceImpl implements GuPiaoService, InitializingBean {
 		calendar.set(Calendar.DATE,-1);
 		String yesterday=dateFormat.format(calendar.getTime());
 		
-		String strResulthis = JDIBridge.THS_HistoryQuotes(number,"close,avgPrice,open,low,high,volume","Interval:D,CPS:1,baseDate:1900-01-01,Currency:YSHB,fill:Previous",yesterday,today);
+		String strResulthis = JDIBridge.THS_HistoryQuotes(number,"close,avgPrice,open,low,high,volume","Interval:D,CPS:1,baseDate:1900-01-01,Currency:YSHB,fill:Previous","2020-12-10",today);
 		logger.info("THS_iFinDhis ==> " + strResulthis);
 		if(strResulthis == null) {
 			return;
@@ -537,8 +538,9 @@ public class GuPiaoServiceImpl implements GuPiaoService, InitializingBean {
 			if(historyDayStockMapper.getByTime(obj) == null) {
 				System.out.println(obj.getNumber());
 				historyDayStockMapper.insert(obj);
+				trendStrategyService.reRisk(obj.getNumber());
 			}
-			
+				
 		}
 	}
 

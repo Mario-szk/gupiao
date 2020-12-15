@@ -132,13 +132,8 @@ public class StrategyTest {
 		list1=list.subList(0, k);
 		for(StockDo sk:list1) {
 			List<StockPriceVo> spList=trendStrategyService.transformByDayLine(historyDayStockMapper.getNumber(sk.getNumber()));
-			RobotAccountDo account=new RobotAccountDo();
-			RobotSetDo config=new RobotSetDo();
-			account.setTotal(new BigDecimal(100000));
-			List<TradingRecordDo> rtList=trendStrategyService.getStrategyByEMA(spList, account, config);
+			List<TradingRecordDo> rtList=trendStrategyService.getStrategyByEMA(spList);
 			for(TradingRecordDo rt:rtList) {
-				BigDecimal total =rt.getTotal().add(account.getTotal());
-				total=total.setScale(2, BigDecimal.ROUND_UP);
 				System.out.println(DF_YYYY_MM_DD.format(rt.getCreateDate())+" "+rt.getNumber()+" 当天均价："+rt.getPrice()+" "+rt.getRemark());
 			}
 		}
