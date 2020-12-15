@@ -228,6 +228,7 @@ public class DataTask  implements InitializingBean {
         DingTalkRobotHTTPUtil.sendMsg(DingTalkRobotHTTPUtil.APP_TEST_SECRET, robotbuy, null, false);
 	}
 	
+	@Scheduled(cron = "0 25 9 * * MON-FRI")
 	public void EmaGupiao() {
 		String robotbuy = MessageFormat.format("开始策略选股" ,new Object[] {});
         DingTalkRobotHTTPUtil.sendMsg(DingTalkRobotHTTPUtil.APP_TEST_SECRET, robotbuy, null, false);
@@ -280,10 +281,48 @@ public class DataTask  implements InitializingBean {
 				isNotifyByMock=false;
 				DingTalkRobotHTTPUtil.sendMsg(realTime.getDingtalkId(), logContext, null, false);
 			}
-			redisUtil.set(key,isNotifyByMock,86400L);
+			redisUtil.set(key,isNotifyByMock,36000L);
 		}
+			
 	}
 
+	@Scheduled(cron = "0 25 9 * * MON-FRI")
+	public void box() {
+		String logContext="GS===========上穿平台策略选股=============";
+		for(StockDo stock : guPiaoService.getAllStock()){
+			List<StockPriceVo> spList=trendStrategyService.transformByDayLine(historyDayStockMapper.getNumber(stock.getNumber()));
+			if(trendStrategyService.getStrategyByBox(spList)) {
+						logContext=logContext
+						+"\n股票编号:"+stock.getNumber() 
+						+"\n股票名称:"+stock.getName()
+						+"\n价格1："+spList.get(spList.size()-3).getClose().setScale(2)
+						+"\n价格2："+spList.get(spList.size()-2).getClose().setScale(2)
+						+"\n价格3："+spList.get(spList.size()-1).getClose().setScale(2)
+						+"\n";
+			}
+		}
+		ai_logger.info(logContext);
+		List<SubscriptionDo> subscriptionList=new ArrayList<SubscriptionDo>();
+		for(SubscriptionDo realTime:guPiaoService.listMemberAll()) {
+			if(StringUtils.equals(realTime.getNumber(), "0")){
+				subscriptionList.add(realTime);
+			}
+		}
+		for(SubscriptionDo realTime:subscriptionList) {
+			String key=RedisKeyUtil.getBoxStockSellNotify(realTime.getNumber(), realTime.getDingtalkId());
+			Boolean isNotifyByMock=(Boolean)redisUtil.get(key);
+			//通知开关
+			if(isNotifyByMock == null || isNotifyByMock) {
+				isNotifyByMock=true;
+			}
+			if(isNotifyByMock) {
+				isNotifyByMock=false;
+				DingTalkRobotHTTPUtil.sendMsg(realTime.getDingtalkId(), logContext, null, false);
+			}
+			redisUtil.set(key,isNotifyByMock,36000L);
+		}
+	}
+	
 
 	/**
 	 * 每天推荐

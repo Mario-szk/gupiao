@@ -28,7 +28,7 @@ public class UpdateRealTimeTask  implements Runnable {
 	@Override
 	public void run() {
 			try {
-				GuPiao date=apiUrl.readUrl(number,false);
+				GuPiao date=apiUrl.readRealTimeUrl(number,true);
 				if(date !=null) {
 					RealTimeDo model=new RealTimeDo();
 					BeanUtils.copyProperties(date, model);

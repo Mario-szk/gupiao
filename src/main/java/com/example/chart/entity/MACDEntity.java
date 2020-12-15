@@ -12,7 +12,7 @@ public class MACDEntity implements ChartEntity {
     public List<Entry> diff;
     public List<Entry> dea;
     public String indexDes;
-
+    public int size;
     public MACDEntity() {
         this.macd = new ArrayList<>();
         this.diff = new ArrayList<>();

@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.ta4j.core.BarSeries;
 import org.ta4j.core.BaseBarSeries;
 import org.ta4j.core.indicators.EMAIndicator;
+import org.ta4j.core.indicators.MACDIndicator;
 import org.ta4j.core.indicators.SMAIndicator;
 import org.ta4j.core.indicators.bollinger.BollingerBandsLowerIndicator;
 import org.ta4j.core.indicators.bollinger.BollingerBandsMiddleIndicator;
@@ -29,6 +30,7 @@ import com.example.chart.base.entity.Candle;
 import com.example.chart.base.entity.Entry;
 import com.example.chart.entity.BollEntity;
 import com.example.chart.entity.EMAEntity;
+import com.example.chart.entity.MACDEntity;
 import com.example.chart.entity.MAEntity;
 import com.example.mapper.HistoryDayStockMapper;
 import com.example.mapper.HistoryStockMapper;
@@ -192,10 +194,35 @@ public class TrendStrategyServiceImpl implements TrendStrategyService {
 		return null;
 	}
 
+	/**
+	 * 突破10天的上轨平均值，且macd是正数,站稳
+	 */
 	@Override
-	public List<TradingRecordDo> getStrategyByBox(List<StockPriceVo> list, RobotAccountDo account, RobotSetDo config) {
-		// TODO Auto-generated method stub
-		return null;
+	public Boolean getStrategyByBox(List<StockPriceVo> list) {
+		if(list.size()<26) {
+			return false;
+		}
+		MACDEntity macdEntity=buildMacdEntry(list);
+		for(int i=macdEntity.size-3;i<macdEntity.size;i++) {
+			if(macdEntity.macd.get(i).getY()<0) {
+				return false;
+			}
+		}
+		
+		
+		BollEntity boll= buildBollEntry(list);
+		double upAvg=0.0;
+		int count=0;
+		for(int i=boll.getUpList().size()-10;i<boll.getUpList().size()-4;i++) {
+			upAvg+=boll.getUpList().get(i).getY();
+			count++;
+		}
+		upAvg=upAvg/count;
+		StockPriceVo last = list.get(list.size()-1);
+		if(last.getClose().doubleValue()>=upAvg) {
+			return true;
+		}
+		return false;
 	}
 
 	@Override
@@ -517,6 +544,30 @@ public class TrendStrategyServiceImpl implements TrendStrategyService {
 		return rslist;
 	}
 
+	public MACDEntity buildMacdEntry(List<StockPriceVo> spList) {
+		BarSeries series =transformBarSeriesByStockPrice(spList);
+		ClosePriceIndicator closePrice = new ClosePriceIndicator(series);
+		MACDIndicator macd = new MACDIndicator(closePrice, 9, 26);
+		EMAIndicator ema1 = new EMAIndicator(closePrice, 12);
+		EMAIndicator ema2 = new EMAIndicator(closePrice, 26);
+		EMAIndicator ema3 = new EMAIndicator(closePrice, 9);
+		MACDEntity macdEntiry=new MACDEntity();
+		List<Entry> macdList=new ArrayList<Entry>();
+	    List<Entry> diffList=new ArrayList<Entry>();
+	    List<Entry> deaList=new ArrayList<Entry>();
+		
+		for(int i=0;i<spList.size();i++) {
+			double macdValue=macd.getValue(i).doubleValue();
+			double dif=ema1.getValue(i).minus(ema2.getValue(i)).doubleValue();
+			double dem=ema3.getValue(i).doubleValue();
+			macdEntiry.macd.add(new Entry(spList.get(i).getHistoryDay(),macdValue));
+			macdEntiry.diff.add(new Entry(spList.get(i).getHistoryDay(),dif));
+			macdEntiry.dea.add(new Entry(spList.get(i).getHistoryDay(),dem));
+		}
+		macdEntiry.size=spList.size();
+		return macdEntiry;
+	}
+	
 	@Override
 	public BollEntity buildBollEntry(List<StockPriceVo> list) {
 		BollEntity boll;

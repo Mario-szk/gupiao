@@ -79,7 +79,7 @@ public interface TrendStrategyService {
 	 * @param config  参数
 	 * @return
 	 */
-	List<TradingRecordDo> getStrategyByBox(List<StockPriceVo> list,RobotAccountDo account,RobotSetDo config);
+	Boolean getStrategyByBox(List<StockPriceVo> list);
 	
 	/**
 	 * 反弹（60分钟，日线）

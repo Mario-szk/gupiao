@@ -42,6 +42,9 @@ public class RedisKeyUtil {
 	public static String getEmaStockSellNotify(String number,String appId) {
 		return "stock_ema_sell_"+dateformat.format(new Date())+"_"+number+"_"+appId;
 	}
+	public static String getBoxStockSellNotify(String number,String appId) {
+		return "stock_box_sell_"+dateformat.format(new Date())+"_"+number+"_"+appId;
+	}
 
 	//上一个趋势指标
 	public static String getLastHistoryPrice(String number,String today) {

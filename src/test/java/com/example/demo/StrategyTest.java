@@ -45,7 +45,7 @@ public class StrategyTest {
 	@Autowired
 	private ReadApiUrl readApiUrl;
 	
-	//@Autowired
+	@Autowired
 	private GuPiaoService guPiaoService;
 	
 	//@Autowired
@@ -173,26 +173,16 @@ public class StrategyTest {
 	}
 	@Test
 	public void bulidMacd() {
-		List<StockPriceVo> spList=trendStrategyService.transformByDayLine(historyDayStockMapper.getNumber(number));
-		BarSeries series =trendStrategyService.transformBarSeriesByStockPrice(spList);
-		ClosePriceIndicator closePrice = new ClosePriceIndicator(series);
-		MACDIndicator macd = new MACDIndicator(closePrice, 9, 26);
-		EMAIndicator ema1 = new EMAIndicator(closePrice, 12);
-		EMAIndicator ema2 = new EMAIndicator(closePrice, 26);
-		EMAIndicator ema3 = new EMAIndicator(closePrice, 9);
-		MACDEntity macdEntiry=new MACDEntity();
-		List<Entry> macdList=new ArrayList<Entry>();
-	    List<Entry> diffList=new ArrayList<Entry>();
-	    List<Entry> deaList=new ArrayList<Entry>();
-		
-		for(int i=0;i<spList.size();i++) {
-			double macdValue=macd.getValue(i).doubleValue();
-			double dif=ema1.getValue(i).minus(ema2.getValue(i)).doubleValue();
-			double dem=ema3.getValue(i).doubleValue();
-			macdEntiry.macd.add(new Entry(spList.get(i).getHistoryDay(),macdValue));
-			macdEntiry.diff.add(new Entry(spList.get(i).getHistoryDay(),dif));
-			macdEntiry.dea.add(new Entry(spList.get(i).getHistoryDay(),dem));
-			System.out.println(spList.get(i).getHistoryDay()+"==>"+dif);
+		List<StockDo> list=guPiaoService.getAllStock();
+		for(StockDo sk:list.subList(0, 1000)) {
+			List<StockPriceVo> spList=trendStrategyService.transformByDayLine(historyDayStockMapper.getNumber(sk.getNumber()));
+			if(trendStrategyService.getStrategyByBox(spList)) {
+				System.out.println(sk.getNumber() +" "+sk.getName()
+						+" 3天前的价格："+spList.get(spList.size()-3).getClose().setScale(2)
+						+" 2天前的价格："+spList.get(spList.size()-2).getClose().setScale(2)
+						+" 1天前的价格："+spList.get(spList.size()-1).getClose().setScale(2));
+			}
+			
 		}
 	}
 }

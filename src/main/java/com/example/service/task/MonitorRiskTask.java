@@ -152,7 +152,7 @@ public class MonitorRiskTask {
 		}
 		
 		//止损 当前价格低于历史支撑位
-		if(nowPrice.getDangqianjiage()<=riskPrice.getStopLoss()) {
+		if(nowPrice.getDangqianjiage()<riskPrice.getBollDayLower()) {
 			String content = MessageFormat.format("GS【止损通知】"+dateformat.format(now)
 	        +"\n------------------------------------ \n股票代码：{0}\n股票名称：{1}\n压力位置:{2}\n变盘位置:{3}\n支撑位置:{4}\n当前价格:{5}\n当前趋势:{6}", 
 	        		                 new Object[] {date.getNumber(), 

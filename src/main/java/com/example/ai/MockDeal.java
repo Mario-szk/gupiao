@@ -62,7 +62,7 @@ public class MockDeal {
 			}
 			HistoryPriceDo nowPrice = list.get(list.size()-1);
 			if(!DateUtils.isSameDay(nowPrice.getDateime())) {
-				GuPiao date=apiUrl.readUrl(nowPrice.getNumber(),false);
+				GuPiao date=apiUrl.readRealTimeUrl(nowPrice.getNumber(),true);
 				if(date !=null) {
 					GuPiaoDo nowRealTimePrice=new GuPiaoDo();
 					BeanUtils.copyProperties(date, nowRealTimePrice);

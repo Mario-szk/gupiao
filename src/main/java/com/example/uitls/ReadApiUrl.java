@@ -149,7 +149,7 @@ public class ReadApiUrl {
 		return null;
 	}
 
-	public GuPiao readUrl(String number, boolean isCache) {
+	public GuPiao readRealTimeUrl(String number, boolean isCache) {
 		GuPiao gp =null;
 		try {
 			if(!isCache) {
