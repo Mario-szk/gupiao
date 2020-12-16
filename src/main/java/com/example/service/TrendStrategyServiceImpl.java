@@ -202,6 +202,12 @@ public class TrendStrategyServiceImpl implements TrendStrategyService {
 		if(list.size()<26) {
 			return false;
 		}
+		StockPriceVo last = list.get(list.size()-1);
+		if(last.getClose().doubleValue()>40 || last.getClose().doubleValue()<10) {
+			return false;
+		}
+		
+		
 		MACDEntity macdEntity=buildMacdEntry(list);
 		for(int i=macdEntity.size-3;i<macdEntity.size;i++) {
 			if(macdEntity.macd.get(i).getY()<0) {
@@ -218,7 +224,7 @@ public class TrendStrategyServiceImpl implements TrendStrategyService {
 			count++;
 		}
 		upAvg=upAvg/count;
-		StockPriceVo last = list.get(list.size()-1);
+		
 		if(last.getClose().doubleValue()>=upAvg) {
 			return true;
 		}

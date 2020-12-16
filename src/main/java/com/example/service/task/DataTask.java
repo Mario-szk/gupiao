@@ -75,6 +75,7 @@ public class DataTask  implements InitializingBean {
 	public void afterPropertiesSet() throws Exception {
 		String robotbuy = MessageFormat.format("【初始化股票池】 \n 初始化股票池数量："  + init(),new Object[] {});
         DingTalkRobotHTTPUtil.sendMsg(DingTalkRobotHTTPUtil.APP_TEST_SECRET, robotbuy, null, false);
+        box();
 	}
 	
 	/**
@@ -288,8 +289,18 @@ public class DataTask  implements InitializingBean {
 
 	@Scheduled(cron = "0 25 9 * * MON-FRI")
 	public void box() {
+		List<SubscriptionDo> subscriptionList=new ArrayList<SubscriptionDo>();
+		for(SubscriptionDo realTime:guPiaoService.listMemberAll()) {
+			if(StringUtils.equals(realTime.getNumber(), "0")){
+				subscriptionList.add(realTime);
+			}
+		}
 		String logContext="GS===========上穿平台策略选股=============";
+		int count =0;
 		for(StockDo stock : guPiaoService.getAllStock()){
+			if(StringUtils.containsIgnoreCase(stock.getNumber(), "sh688")) {
+				continue;
+			}
 			List<StockPriceVo> spList=trendStrategyService.transformByDayLine(historyDayStockMapper.getNumber(stock.getNumber()));
 			if(trendStrategyService.getStrategyByBox(spList)) {
 						logContext=logContext
@@ -299,28 +310,18 @@ public class DataTask  implements InitializingBean {
 						+"\n价格2："+spList.get(spList.size()-2).getClose().setScale(2)
 						+"\n价格3："+spList.get(spList.size()-1).getClose().setScale(2)
 						+"\n";
+						count++;
+			}
+			if(count>10) {
+				ai_logger.info(logContext);
+				for(SubscriptionDo realTime:subscriptionList) {
+						DingTalkRobotHTTPUtil.sendMsg(realTime.getDingtalkId(), logContext, null, false);
+				}
+				logContext="GS===========上穿平台策略选股=============";
+				count =0;
 			}
 		}
-		ai_logger.info(logContext);
-		List<SubscriptionDo> subscriptionList=new ArrayList<SubscriptionDo>();
-		for(SubscriptionDo realTime:guPiaoService.listMemberAll()) {
-			if(StringUtils.equals(realTime.getNumber(), "0")){
-				subscriptionList.add(realTime);
-			}
-		}
-		for(SubscriptionDo realTime:subscriptionList) {
-			String key=RedisKeyUtil.getBoxStockSellNotify(realTime.getNumber(), realTime.getDingtalkId());
-			Boolean isNotifyByMock=(Boolean)redisUtil.get(key);
-			//通知开关
-			if(isNotifyByMock == null || isNotifyByMock) {
-				isNotifyByMock=true;
-			}
-			if(isNotifyByMock) {
-				isNotifyByMock=false;
-				DingTalkRobotHTTPUtil.sendMsg(realTime.getDingtalkId(), logContext, null, false);
-			}
-			redisUtil.set(key,isNotifyByMock,36000L);
-		}
+		
 	}
 	
 
