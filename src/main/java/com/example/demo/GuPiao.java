@@ -1,7 +1,6 @@
 package com.example.demo;
 
 import java.io.Serializable;
-import java.math.BigDecimal;
 
 public class GuPiao implements Serializable {
 	

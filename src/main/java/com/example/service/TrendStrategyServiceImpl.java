@@ -219,7 +219,7 @@ public class TrendStrategyServiceImpl implements TrendStrategyService {
 		BollEntity boll= buildBollEntry(list);
 		double upAvg=0.0;
 		int count=0;
-		for(int i=boll.getUpList().size()-10;i<boll.getUpList().size()-4;i++) {
+		for(int i=boll.getUpList().size()-7;i<boll.getUpList().size()-1;i++) {
 			upAvg+=boll.getUpList().get(i).getY();
 			count++;
 		}
