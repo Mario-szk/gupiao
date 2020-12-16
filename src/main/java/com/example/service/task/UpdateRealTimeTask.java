@@ -70,16 +70,16 @@ public class UpdateRealTimeTask  implements Runnable {
 						logger.error("转换对象失败,检查key的内容:"+key4);
 						return;
 					}
-					String appSecret="bb888ac7199ba68c327c8a0e44fbf0ee6b65b5b0f490beb39a209a295e132a4f";
+					String appSecret="477b77570a86de89c4c3a43a662e498d4262e7382ea0b0332563d88c93adc3fc";
 					String tag="bigVolume";
 					Boolean isNotify=getNotify(number,tag);
 					if(isNotify==null) {
 						isNotify=true;
 						setNotify(number,tag,isNotify);
 					}
-					if(model.getDangqianjiage()>model.getKaipanjia() && model.getDangqianjiage()>riskStock.getBollDayMid() 
-							&& model.getChengjiaogupiao().longValue() > (riskStock.getTop5volume()*5) && isNotify) {
-						String content="GS=========量价突增==========\n股票编码："+number
+					if(model.getDangqianjiage()>model.getKaipanjia() && model.getDangqianjiage()>=riskStock.getBollDayMid() 
+							&& model.getChengjiaogupiao().longValue() > (riskStock.getTop5volume()*3) && isNotify) {
+						String content="GS=========实时机会，量价突增==========\n股票编码："+number
 								+"\n股票名称："+model.getName()
 								+"\n 上轨价格："+riskStock.getBollDayUp()
 								+"\n 中轨价格："+riskStock.getBollDayMid()
@@ -88,14 +88,13 @@ public class UpdateRealTimeTask  implements Runnable {
 								+"\n 现价："+model.getDangqianjiage()
 								+"\n现在成交量："+model.getChengjiaogupiao().longValue()
 								+"\n过去成交量："+riskStock.getTop5volume()
+								+"\n配合MACD，JDK,形态操作："+riskStock.getTop5volume()
 								;
 						DingTalkRobotHTTPUtil.sendMsg(appSecret, content, null, false);
 						isNotify=false;
 						setNotify(number,tag,isNotify);
 						ai_logger.info(content);
 					}
-				}else {
-					ai_logger.error("查询失败:"+number);
 				}
 			} catch (Exception e) {
 				logger.warn(e.getMessage(),e);
