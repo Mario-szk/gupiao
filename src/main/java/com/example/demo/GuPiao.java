@@ -4,7 +4,9 @@ import java.math.BigDecimal;
 
 public class GuPiao {
 	
-	
+	public GuPiao() {
+		super();
+	}
 	
 	public GuPiao(String number, String name, String kaipanjia, String zuorishoupanjia, String dangqianjiage,
 			String top, String low, String jbuy1, String jsell1, String chengjiaogupiao, String chengjiaojine,
@@ -49,20 +51,6 @@ public class GuPiao {
 	}
 	
 	
-	@Override
-	public String toString() {
-		return "GuPiao [number=" + number + ", name=" + name + ", 今天开盘价=" + kaipanjia + ", 昨日收盘价="
-				+ zuorishoupanjia + ", 当前价格=" + dangqianjiage + ", 今天最高价=" + top + ", 今天最低价=" + low + ", 竞价买一="
-				+ jbuy1 + ", 竞价卖一=" + jsell1 + ", 今天成交股票数=" + chengjiaogupiao + ", 今天成交金额="
-				+ chengjiaojine + ", 买一股数=" + buy1number + ", 买一价格=" + buy1 + ", 买二股数=" + buy2number
-				+ ", 买二价格=" + buy2 + ", 买三股数=" + buy3number + ", 买三价格=" + buy3 + ", 买四股数=" + buy4number
-				+ ", 买四价格=" + buy4 + ", 买五股数=" + buy5number + ", 买五价格=" + buy5 + ", 卖一股数=" + sell1number
-				+ ", 卖一价格=" + sell1 + ", 卖二股数=" + sell2number + ", 卖二价格=" + sell2 + ", 卖三股数="
-				+ sell3number + ", 卖三价格=" + sell3 + ", 卖四股数=" + sell4number + ", 卖四价格=" + sell4
-				+ ", 卖五股数=" + sell5number + ", 卖五价格=" + sell5 + ", 日期=" + date + ", 时间=" + time + "]";
-	}
-
-
 	private String number;
 	private String name;
 	private Double kaipanjia;
