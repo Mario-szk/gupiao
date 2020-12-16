@@ -1,9 +1,14 @@
 package com.example.demo;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 
-public class GuPiao {
+public class GuPiao implements Serializable {
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 7289460169416455501L;
 	public GuPiao() {
 		super();
 	}
