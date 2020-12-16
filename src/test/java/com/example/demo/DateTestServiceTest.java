@@ -77,7 +77,7 @@ public class DateTestServiceTest {
 	/**
 	 * 补风险预警
 	 */
-	@Test
+	//@Test
 	public void updateRisk() {
 		List<StockDo> stockList = guPiaoService.getAllStock();
 		for(StockDo stock:stockList) {
@@ -88,7 +88,7 @@ public class DateTestServiceTest {
 	/**
 	 * 补日线
 	 */
-	//@Test
+	@Test
 	public void TestDay() {
 		guPiaoService.updateDayStockByThs();
 	}
