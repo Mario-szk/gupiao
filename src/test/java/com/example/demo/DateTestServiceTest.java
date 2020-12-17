@@ -86,7 +86,7 @@ public class DateTestServiceTest {
 	}
 	
 	/**
-	 * 补日线
+	 * 补日线 同花顺
 	 */
 	@Test
 	public void TestDay() {
@@ -106,5 +106,10 @@ public class DateTestServiceTest {
 	public void updateHistoryTask2() {
 		realTimeTask.updateHistoryTask2();
 	}
-
+	
+	//@Test
+	public void TestUpdateAllDayGuPiao() {
+		dataTask.updateAllDayGuPiao();
+	}
+	
 }

@@ -484,7 +484,7 @@ public class GuPiaoServiceImpl implements GuPiaoService, InitializingBean {
 		
 		String strResulthis = JDIBridge.THS_HistoryQuotes(number,"close,avgPrice,open,low,high,volume","Interval:D,CPS:1,baseDate:1900-01-01,Currency:YSHB,fill:Previous",yesterday,today);
 		logger.info("THS_iFinDhis ==> " + strResulthis);
-		if(strResulthis == null) {
+		if(StringUtils.isBlank(strResulthis)) {
 			return;
 		}
 		HistoryRsDate rs=JSON.parseObject(strResulthis,HistoryRsDate.class);

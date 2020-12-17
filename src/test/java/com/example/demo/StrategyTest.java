@@ -171,18 +171,24 @@ public class StrategyTest {
 			}
 		}
 	}
-	@Test
-	public void bulidMacd() {
-		List<StockDo> list=guPiaoService.getAllStock();
-		for(StockDo sk:list.subList(0, 1000)) {
-			List<StockPriceVo> spList=trendStrategyService.transformByDayLine(historyDayStockMapper.getNumber(sk.getNumber()));
-			if(trendStrategyService.getStrategyByBox(spList)) {
-				System.out.println(sk.getNumber() +" "+sk.getName()
-						+" 3天前的价格："+spList.get(spList.size()-3).getClose().setScale(2)
-						+" 2天前的价格："+spList.get(spList.size()-2).getClose().setScale(2)
-						+" 1天前的价格："+spList.get(spList.size()-1).getClose().setScale(2));
-			}
-			
-		}
+	public static void main(String[] args) {
+		// format的模板  
+        java.text.DecimalFormat df = new java.text.DecimalFormat("#0.00");  
+        double x2=10.57;
+        double x1=10.30;
+        // 初始化数据  
+        double b = x2-x1; 
+        double a = 10*b;  
+        
+        double c = Math.sqrt(a*a+b*b);  
+          
+        // 计算弧度表示的角  
+        double B = Math.acos((a*a + c*c - b*b)/(2.0*a*c));  
+        // 用角度表示的角  
+        B = Math.toDegrees(B);
+        double A=90-B;
+        // 格式化数据，保留两位小数  
+        System.out.println(df.format(B));
+        System.out.println(df.format(A));
 	}
 }

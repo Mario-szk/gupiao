@@ -75,7 +75,6 @@ public class DataTask  implements InitializingBean {
 	public void afterPropertiesSet() throws Exception {
 		String robotbuy = MessageFormat.format("【初始化股票池】 \n 初始化股票池数量："  + init(),new Object[] {});
         DingTalkRobotHTTPUtil.sendMsg(DingTalkRobotHTTPUtil.APP_TEST_SECRET, robotbuy, null, false);
-        box();
 	}
 	
 	/**
@@ -137,8 +136,10 @@ public class DataTask  implements InitializingBean {
 	/**
 	 * 更新日线数据
 	 */
-	@Scheduled(cron = "0 10 15 * * MON-FRI")
+	@Scheduled(cron = "0 30 15 * * MON-FRI")
 	public void updateAllDayGuPiao() {
+		String robotbuy = MessageFormat.format("开始更新日线" ,new Object[] {});
+        DingTalkRobotHTTPUtil.sendMsg(DingTalkRobotHTTPUtil.APP_TEST_SECRET, robotbuy, null, false);
 		List<StockDo> stockList = guPiaoService.getAllStock();
 		final SimpleDateFormat dateformat = new SimpleDateFormat("yyyyMMdd");
 		String dateStr=dateformat.format(new Date());
@@ -191,10 +192,16 @@ public class DataTask  implements InitializingBean {
 					GuPiao date= (GuPiao)redisUtil.get(cacheKey);
 					if(date==null) {
 						date=apiUrl.readRealTimeUrl(stock.getNumber());
-						last.setChengjiaogupiao(date.getChengjiaogupiao());
-						last.setKaipanjia(date.getKaipanjia());
-						last.setDangqianjiage(date.getDangqianjiage());
 					}
+					if(date==null) {
+						robotbuy="异常数据："+stock.getNumber();
+						logger.warn(robotbuy);
+						DingTalkRobotHTTPUtil.sendMsg(DingTalkRobotHTTPUtil.APP_TEST_SECRET, robotbuy, null, false);
+						continue;
+					}
+					last.setChengjiaogupiao(date.getChengjiaogupiao());
+					last.setKaipanjia(date.getKaipanjia());
+					last.setDangqianjiage(date.getDangqianjiage());
 				}
 				obj.setHistoryDay(dateStr);
 				obj.setNumber(stock.getNumber());
@@ -210,7 +217,7 @@ public class DataTask  implements InitializingBean {
 				}
 			}
         }
-		String robotbuy = MessageFormat.format("更新日线成功:"+i ,new Object[] {});
+		robotbuy = MessageFormat.format("更新日线成功:"+i ,new Object[] {});
         DingTalkRobotHTTPUtil.sendMsg(DingTalkRobotHTTPUtil.APP_TEST_SECRET, robotbuy, null, false);
         updateRisk();
         EmaGupiao();
