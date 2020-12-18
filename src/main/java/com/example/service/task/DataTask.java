@@ -220,7 +220,6 @@ public class DataTask  implements InitializingBean {
 		robotbuy = MessageFormat.format("更新日线成功:"+i ,new Object[] {});
         DingTalkRobotHTTPUtil.sendMsg(DingTalkRobotHTTPUtil.APP_TEST_SECRET, robotbuy, null, false);
         updateRisk();
-        EmaGupiao();
 	}
 	
 	public void updateRisk() {
@@ -234,9 +233,9 @@ public class DataTask  implements InitializingBean {
 		bs=System.currentTimeMillis()-bs;
 		robotbuy = MessageFormat.format("GS----更新风险线完毕-------耗时："+bs+" ms",new Object[] {});
         DingTalkRobotHTTPUtil.sendMsg(DingTalkRobotHTTPUtil.APP_TEST_SECRET, robotbuy, null, false);
+        EmaGupiao();
 	}
 	
-	@Scheduled(cron = "0 25 9 * * MON-FRI")
 	public void EmaGupiao() {
 		String robotbuy = MessageFormat.format("开始策略选股" ,new Object[] {});
         DingTalkRobotHTTPUtil.sendMsg(DingTalkRobotHTTPUtil.APP_TEST_SECRET, robotbuy, null, false);
